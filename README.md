@@ -18,4 +18,4 @@ in the home directory
 
 setup a cronjob to run exporter.sh every minute
 
-* * * * * /path/to/aterx-pool-stats/src/exporter.sh
+    * * * * * /path/to/aterx-pool-stats/src/exporter.sh

@@ -1,0 +1,464 @@
+<!doctype html>
+<html>
+    <head>
+    <title><!-- SITENAME --!></title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: "Courier New", Courier, monospace;
+            }
+            header {
+                font-size: larger;
+                font-weight: bold;
+                padding-bottom: 1em;
+            }
+            table {
+                padding-bottom: 1em;
+            }
+            td {
+                vertical-align: top;
+                white-space: nowrap;
+            }
+            td:last-child {
+                white-space: unset;
+            }
+	    .poolstate {
+		    font-size: x-small;
+	    }
+            .miner {
+                display: none;
+            }
+            #address {
+                min-width: 10ch;
+                max-width: 10ch;
+                overflow: hidden;
+                border-bottom: 1px dashed black;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                word-wrap: unset;
+            }
+            #address:focus {
+                outline: 0px solid transparent;
+                text-overflow: initial;
+                white-space: initial;
+                word-wrap: break-word;
+            }
+	    .alight:link{
+		    color: blue;
+	    }
+	    .alight:visited{
+		    color: purple;
+	    }
+	    .alight:hover{
+		    color: red;
+	    }
+	    .alight:active{
+		    color: red;
+	    }
+            .adark:link{
+		    color: #4ddbff;
+	    }
+	    .adark:visited {
+		    color: #BF5FFF;
+	    }
+	    .adark:hover{
+		    color: #7F00FF;
+	    }
+	    .adark:active{
+		    color: #7F00FF;
+	    }
+        </style>
+    </head>
+    <body>
+    <header><!-- SITENAME --!></header>
+	    <table>
+		    <tr width=100%>
+			    <td id=stat_block width=34%>
+		    <header>Pool and Miner Stats</header>
+        <table>
+            <tr><td>Pool HR: </td><td id="pool_hashrate"></td></tr>
+            <tr><td>Network HR: </td><td id="network_hashrate"></td></tr>
+            <tr><td>Network height: </td><td id="network_height"></td></tr>
+            <tr><td>Blocks found: </td><td id="pool_blocks_found"></td></tr>
+            <tr><td>Last block found: </td><td id="last_block_found"></td></tr>
+            <tr><td>Last template: </td><td id="last_template_fetched"></td></tr>
+            <tr><td>Round HR: </td><td id="round_hashrate"></td></tr>
+            <tr><td>Round hashes: </td><td id="round_hashes"></td></tr>
+            <tr><td>Payment threshold: </td><td id="payment_threshold"></td></tr>
+            <tr><td>Pool fee: </td><td id="pool_fee"></td></tr>
+            <tr><td>Pool SSL port: </td><td id="pool_ssl_port"></td></tr>
+            <tr><td>Allow self-select: </td><td id="allow_self_select"></td></tr>
+            <tr><td>Miners connected: </td><td id="connected_miners"></td></tr>
+            <tr class="miner"><td>Your HR: </td><td id="miner_hashrate"></td></tr>
+            <tr class="miner"><td>Balance due: </td><td id="miner_balance"></td></tr>
+	    <tr class="miner"><td>Worker Count: </td><td id="worker_count"></td></tr>
+	    <tr><td>Miner address: </td><td id="address" contenteditable="true"></td></tr></table>
+			    </td>
+			    <td>
+				<header>Blocks found</header>
+				<code>
+				<!-- BLOCKLIST --!>
+				</code>
+			    </td>
+			    <td>
+				<header>Payout info</header>
+				<code>
+				<!-- PAYOUTLIST --!>
+	    			TODO after first block found
+				</code>
+			    </td>
+		    </tr>
+        </table>
+	<div>Connected Rigs: </div><div id="rig_list"></div><br/>
+	<small><a target="_blank" class="alight" href="https://github.com/jtgrassie/monero-pool">https://github.com/jtgrassie/monero-pool</a></small><br/>
+	<small><a target="_blank" class="alight" href="https://www.reddit.com/r/pool_aterx_com">Pool subreddit</a></small><br/>
+	<small onClick="toggleDark()">Toggle dark mode</small></br></br>
+	<div id="shittygraph_div">
+		<canvas id="shittygraph" width="900" height="150" onmousemove="poolstats(event);" onmouseleave="hidepoolstats();"></canvas>
+	</div>
+	<div id="shittygraph_marquee">
+		<font color="#FF0000">Network HR</font>&nbsp;<font color="#00FF00">Pool HR</font>&nbsp;<font color="#FFA500">Averaged Pool HR</font>&nbsp;<!-- AVERAGE --!><br/>
+	Sample rate is once a minute, and includes the last 900 entries.<br/>
+	<!-- MULTI --!><br/>
+	<!-- BLOCKFIND --!><br/>
+	</div>
+	<div id="howto">
+	<h4>Get a monero wallet</h4>
+	<ul>
+	<li><a target="_blank" class="alight" href="https://getmonero.org">Start here to get a wallet software</a></li>
+	<li>If you need a bootstrap, or do not want to host your own node you can use pool.aterx.com:18081, note this does not use SSL currently</li>
+	<li>This address is for wallets only, and not for miners, see below for the miner configuration information</li>
+	</ul>
+	<h4>Get XMRIG</h4>
+	<ul>
+	<li><a target="_blank" class="alight" href="https://github.com/xmrig/xmrig">Xmrig github</a> or git clone https://github.com/xmrig/xmrig</li>
+	<li>Follow the <a target="_blank" class="alight" href="https://xmrig.com/docs/miner/build">build instructions</a>, or download the <a target="_blank" class="alight" href="https://github.com/xmrig/xmrig/releases">Prebuilts</a> </li>
+	<li>Add to Windows Defender Exclusions -&gt; Virus &amp; Threat protection -&gt; Virus &amp; threat protection settings -&gt; Settings -&gt; Exclusions -&gt; add xmrig.exe as a process name, and the folder where you installed or built it., otherwise Windows Defender will delete it.</li>
+	<li>Run in an Administrative Command prompt, or with sudo</li>
+	<li>On initial launch it may say that it is enabled huge page but that a reboot is needed, it is highly recommended to reboot to get a better hashrate</li>
+	<li>Example CLI:</li>
+	<li>xmrig -o pool.aterx.com:4244 --tls --keepalive -u &lt;walletid&gt; -p d=20000 --algo rx/0 --rig-id &lt;CustomRigIdentifier&gt;</li>
+	<li>Example Pools section of config.json:</li>
+	<li><pre>
+"pools": [
+     {
+            "algo": "rx/0"
+            "coin": null,
+            "url": "pool.aterx.com:4244",
+            "user": "&lt;wallet&gt;",
+            "pass": "d=27881",
+	    "rig-id": "&lt;custom-rig-id&gt;",
+            "keepalive": true,
+            "enabled": true,
+            "tls": true,
+            "tls-fingerprint": null,
+            "daemon": false,
+            "socks5": null,
+            "self-select": null
+     }
+     ]
+	</pre>
+	</li>
+        <li>If you don't specify a d=value you will start at 1000 and be auto adjusted up.</li>
+	<li>Recommended starting d=value is 20,000 * per 1kh/s</li>
+	<li>If you have 3 or more miners it's recommended to use a proxy to improve your overall hashrate</li>
+	<li><a target="_blank" class="alight" href="https://github.com/xmrig/xmrig-proxy">xmrig-proxy</a></li>
+	</ul>
+	</div>
+	<div>Next Certificate Renewal Jun 20/2021 8am - pool will be offline for a few moments while the certs are renewed</div></br>
+	<small>Want a cloud hosting provider cheaper than AWS/Azure/GCP try <a target="_blank" class="alight" href="https://m.do.co/c/00c5ff3f406e">Digital Ocean</a> you start with a $100/60day credit.  Using this referral link helps keep the pool operational!</small></br>
+	<small>By using this site you accept two cookies, one to track your wallet(wa), and one to track dark mode(dark_mode)</small>
+        <script>
+	    var xmlhttp = new XMLHttpRequest();
+	    var xmlhttp_rig = new XMLHttpRequest();
+            var graph = document.getElementById("shittygraph");
+	    var connected_rigs = document.getElementById("rig_list");
+	    var graph_data;
+	    var rig_list;
+	    var dark_mode = 0;
+	    xmlhttp.onreadystatechange = function()
+		{
+			if (this.readyState == 4 && this.status ==200){
+				graph_data = JSON.parse(this.responseText);
+				updateGraph(graph_data);
+			}
+		}
+            xmlhttp_rig.onreadystatechange = function()
+		{
+			if (this.readyState == 4 && this.status == 200)
+			{
+				rig_list = JSON.parse(this.responseText);
+				connected_rigs.innerHTML = rig_list;
+			}
+		}
+	    xmlhttp.open("GET","/graph_stats.json", true);
+	    xmlhttp.send();
+	    xmlhttp_rig.open("GET","/workers", true);
+	    xmlhttp_rig.send();
+            function toggleDark()
+		{
+			address_div = document.getElementById("address");
+			poolstate = document.getElementById("poolstate");
+			if (dark_mode == 0) {
+				dark_mode = 1;
+				address_div.style.borderBottom = "1px dashed white";
+				document.body.style.background = "#000000";
+				document.body.style.color = "#FFFFFF";
+				var x, i;
+				x = document.querySelectorAll("a");
+				for (i = 0; i < x.length; i++)
+				{
+					x[i].className = "adark";
+				}
+			} else {
+				dark_mode = 0;
+				address_div.style.borderBottom = "1px dashed black";
+				document.body.style.background = "#FFFFFF";
+				document.body.style.color = "#000000";
+				x = document.querySelectorAll("a");
+				for (i = 0; i < x.length; i++)
+				{
+					x[i].className = "alight";
+				}
+
+			}
+
+				xmlhttp.open("GET","/graph_stats.json", true);
+				xmlhttp.send();
+	          var d = new Date();
+                d.setTime(d.getTime() + (86400 * 365 * 1000));
+                document.cookie = "dark_mode=" + dark_mode +
+                    ";expires=" + d.toGMTString();
+
+		}
+	    
+	    function updateGraph(graph_data)
+		{
+		     ctx = graph.getContext('2d');
+		     if (dark_mode == 0) {
+			     ctx.fillStyle = "white";
+			    } 
+			if (dark_mode == 1) {
+				ctx.fillStyle = "black";
+			}
+		     ctx.fillRect(0, 0, 900,150);
+		     for (n = 0; n < 900; n++) {
+			     if ( (n+1)%10 == 0 )
+				{
+					if ( dark_mode == 0) {
+						ctx.fillStyle = "#F8F8F8";
+					}
+					if ( dark_mode == 1) {
+						ctx.fillStyle = "#080808";
+					}
+					ctx.fillRect(n,0,1,150);
+				}
+			     ctx.fillStyle = "#FFA500";
+			     ctx.fillRect(n,graph_data[n]['pavg'],1,1);
+			     ctx.fillStyle = "#00FF00";
+			     ctx.fillRect(n,graph_data[n]['prp'],1,1);
+			     ctx.fillStyle = "#FF0000";
+			     ctx.fillRect(n,graph_data[n]['nrp'],1,1);
+		     }
+		}
+	    function hidepoolstats()
+		{
+			poolstate = document.getElementById("poolstate");
+			gnr = document.getElementById("graph_nr");
+			gpr = document.getElementById("graph_pr");
+			gnr.innerHTML = "";
+			gpr.innerHTML = "";
+			gts.innerHTML = "";
+			poolstate.style.opacity = 0.0;
+		}
+	    function poolstats(e)
+		{
+			poolstate = document.getElementById("poolstate");
+			poolstate.style.position = "fixed";
+			poolstate.style.top = (e.pageY-75) - window.scrollY +"px";
+			poolstate.style.left = e.pageX + "px";
+			poolstate.style.opacity = 100;
+			gnr = document.getElementById("graph_nr");
+			gpr = document.getElementById("graph_pr");
+			gts = document.getElementById("graph_dt");
+			var rect = e.target.getBoundingClientRect();
+			stat_lookup = e.clientX - rect.left;
+			gnr.innerHTML = format_hashrate(graph_data[stat_lookup]['nr']);
+			gpr.innerHTML = format_hashrate(graph_data[stat_lookup]['pr']);
+			d = new Date(graph_data[stat_lookup]['ts']*1000);
+			gts.innerHTML = d.toLocaleString();
+		}
+
+            function format_last_time(last)
+            {
+                var now = new Date().getTime() / 1000;
+                var diff = now - last;
+                var v;
+                if (last == 0)
+                    return "None yet";
+                else if (diff <= 0)
+                    return "Just now";
+                else if (diff < 60)
+                {
+                    v = parseInt(diff);
+                    return v + " second" + (v != 1 ? "s" : "") + " ago";
+                }
+                else if (diff < 3600)
+                {
+                    v = parseInt(diff/60);
+                    return v + " minute" + (v != 1 ? "s" : "") + " ago";
+                }
+                else if (diff < 86400)
+                {
+                    v = parseInt(diff/3600);
+                    return v + " hour" + (v != 1 ? "s" : "") + " ago";
+                }
+                else
+                {
+                    v = parseInt(diff/86400);
+                    return v + " day" + (v != 1 ? "s" : "") + " ago";
+                }
+            }
+
+            function max_precision(n, p)
+            {
+                return parseFloat(parseFloat(n).toFixed(p));
+            }
+
+            function format_hashes(h)
+            {
+                if (h < 1e-12)
+                    return "0 H";
+                else if (h < 1e-9)
+                    return max_precision(h*1e+12, 0) + " pH";
+                else if (h < 1e-6)
+                    return max_precision(h*1e+9, 0) + " nH";
+                else if (h < 1e-3)
+                    return max_precision(h*1e+6, 0) + " μH";
+                else if (h < 1)
+                    return max_precision(h*1e+3, 0) + " mH";
+                else if (h < 1e+3)
+                    return parseInt(h) + " H";
+                else if (h < 1e+6)
+                    return max_precision(h*1e-3, 2) + " KH";
+                else if (h < 1e+9)
+                    return max_precision(h*1e-6, 2) + " MH";
+                else
+                    return max_precision(h*1e-9, 2) + " GH";
+            }
+
+            function format_hashrate(h)
+            {
+                return format_hashes(h) + "/s";
+            }
+
+            function format_round_hashrate(round_hashes, last_block_found)
+            {
+                var now = new Date().getTime() / 1000;
+                var diff = now - last_block_found;
+                if (last_block_found == 0)
+                    return 0;
+                if (diff <= 0)
+                    return 0;
+                return format_hashrate(round_hashes / diff);
+            }
+
+            var wf = document.querySelector("#address");
+            var xhr = new XMLHttpRequest();
+            var rhr = document.querySelector("#round_hashrate");
+            xhr.onload = function()
+            {
+                var stats = JSON.parse(xhr.responseText);
+                for (var e in stats)
+                {
+                    var el = document.querySelector("#"+e);
+                    if (!el)
+                        continue;
+                    if (/^last/.test(e))
+                        el.innerHTML = format_last_time(stats[e]);
+                    else if (/hashrate/.test(e))
+                        el.innerHTML = format_hashrate(stats[e]);
+                    else if (e == "pool_fee")
+                        el.innerHTML = (stats[e]*100) + "%";
+                    else if (e == "allow_self_select")
+                        el.innerHTML = stats[e] == 1 ? "Yes" : "No";
+                    else if (e == "round_hashes")
+                    {
+                        el.innerHTML = max_precision(stats[e]*100 /
+                            stats["network_difficulty"], 1) + "%" +
+                            " (" + format_hashes(stats[e]) + " / " +
+                            format_hashes(stats["network_difficulty"]) + ")";
+                        rhr.innerHTML = format_round_hashrate(
+                            stats["round_hashes"], stats["last_block_found"]);
+                    }
+                    else if (e == "pool_ssl_port")
+                    {
+                        el.closest("tr").style = "display: " +
+                            (stats[e] == 0 ? "none;" : "table-row;");
+                        el.innerHTML = stats[e];
+                    }
+                    else
+                        el.innerHTML = stats[e];
+                }
+            };
+
+            wf.onblur = function(e)
+            {
+                var d = new Date();
+                d.setTime(d.getTime() + (86400 * 365 * 1000));
+                document.cookie = "wa=" + this.innerText +
+                    ";expires=" + d.toGMTString();
+                window.location.reload();
+                return false;
+            };
+
+            window.onload = function()
+            {
+                var jar = {};
+                for (var kv, i=0, kvs=document.cookie.split(/\s*;\s*/); i<kvs.length; i++)
+                {
+                    kv = kvs[i].split(/\s*=\s*/);
+                    if (kv.length > 1)
+                    {
+                        try {
+                            jar[kv[0]] = kv[1];
+                        } catch (e) {}
+                    }
+                }
+                if (jar.wa &&
+                    /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/.test(jar.wa))
+                {
+                    var m = document.querySelectorAll(".miner");
+                    for (var i=0; i<m.length; i++)
+                    {
+                        m[i].style = "display: table-row;";
+                    }
+                    wf.innerText = jar.wa;
+                }
+		if (jar.dark_mode && (jar.dark_mode == 0 || jar.dark_mode == 1))
+			{
+				if (jar.dark_mode == 1){
+					toggleDark();
+				}
+			}
+                var get_stats = function()
+                {
+                    xhr.open("GET", "/stats");
+                    xhr.send(null);
+		    xmlhttp.open("GET", "/graph_stats.json", true);
+		    xmlhttp.send(null);
+                };
+                setInterval(get_stats, 30000);
+                get_stats();
+            };
+        </script>
+	<div class="poolstate" id="poolstate" style="opacity: 0.0;">
+	<table class="poolstate"><tr><td><font color="#FF0000">NR:</font></td><td class="poolstate" id='graph_nr'></td></tr>
+	<tr><td class="poolstate"><font color="#00FF00">PR:</font></td><td class="poolstate" id='graph_pr'></td></tr>
+	<tr><td class="poolstate">Time:</td><td class="poolstate" id="graph_dt"></td></tr>
+	</table>
+	</div>
+
+    </body>
+</html>

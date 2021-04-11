@@ -10,7 +10,9 @@ cp aterx-pool-stats/src/sample-pool-stats.conf ~/pool-stats.conf
 make sure all config lines are correct and that the file can be parsed with jq .
 
 create the neccesary locations with nginx to host your website files.
-see pool.template.html as an example
+see sample.nginx.conf
+
+For the SSI replacements by report.py see: see pool.template.html as an example
 
 run the ./exporter.sh script and validate it works
 Change the path in this script to the config file if not

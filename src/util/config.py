@@ -1,6 +1,7 @@
 import os
 import json
 import argparse
+import sys
 
 
 def cli_options():
@@ -29,7 +30,8 @@ def parse_config(config_file):
             'block_find_out', # file stating the amount of blocks you should find in 30 days
             'block_inout', # file to dump to with inspect data, and include in template build
             'site_ip', # endpoint to get stats from
-            'script_dir' # where these scripts are located
+            'script_dir', # where these scripts are located
+            'pool_logo'
         ]
         for key in config_keys:
             if key not in config.keys():

@@ -75,7 +75,7 @@ def main():
             break
     #calculate where in our graph data everything shoudl go in a 900 wide x 150 high image
     if highest_p != 0: 
-        p_avg_d = abs(floor(p_avg / (highest_p-lowest_p) * 150) - 150)
+        p_avg_d = abs(floor(p_avg / (highest_p) * 150) - 150)
     else:
         p_avg_d = 149
     stat_array = []
@@ -86,7 +86,7 @@ def main():
         stat_data[my_item]['nrp'] = percentile
         percentile = 0
         if highest_p != 0:
-            percentile = abs(floor(stat_data[my_item]['pr'] / (highest_p-lowest_p) * 150) - 150)
+            percentile = abs(floor(stat_data[my_item]['pr'] / (highest_p) * 150) - 150)
         else:
             percentile = 149
         stat_data[my_item]['prp'] = percentile

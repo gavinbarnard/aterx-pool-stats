@@ -45,7 +45,7 @@ def main():
     blocks = blocks.split("\n")
     blocks.reverse()
     for i in range(0, len(blocks)):
-        if len[blocks[i]] == 0:
+        if len(blocks[i]) == 0:
             del(blocks[i])
     blocks = "<br>".join(blocks)
     template = template.replace("<!-- BLOCKLIST --!>", blocks)

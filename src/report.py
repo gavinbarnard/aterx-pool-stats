@@ -42,6 +42,7 @@ def main():
 # temporary disable unsure I have the correct calculations in stats.py
     template = template.replace("<!-- SITENAME --!>", config_items['sitename'])
     template = template.replace("<!-- POOLLOGO --!>", config_items['pool_logo'])
+    blocks = blocks.replace("\n", "<br>")
     template = template.replace("<!-- BLOCKLIST --!>", blocks)
     pool_hash = "Network HR vs Pool HR scale is roughly 1/{}".format(multi)
     template = template.replace("<!-- MULTI --!>", pool_hash)

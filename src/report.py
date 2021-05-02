@@ -43,7 +43,7 @@ def main():
     template = template.replace("<!-- SITENAME --!>", config_items['sitename'])
     template = template.replace("<!-- POOLLOGO --!>", config_items['pool_logo'])
     blocks = blocks.split("\n")
-    blocks = blocks.reverse()
+    blocks.reverse()
     blocks = "<br>".join(blocks)
     template = template.replace("<!-- BLOCKLIST --!>", blocks)
     pool_hash = "Network HR vs Pool HR scale is roughly 1/{}".format(multi)

@@ -1,3 +1,4 @@
+import json, datetime
 from util.config import parse_config, cli_options
 
 def convert_hz(hertz):
@@ -20,6 +21,27 @@ def convert_hz(hertz):
 def main():
     config_file = cli_options()
     config_items = parse_config(config_file)
+    payout_fh = open(config_items['payout_file'])
+    payout = json.loads(payout_fh.read())
+    payout_fh.close()
+    amounts = []
+    counts = []
+    dates = []
+    for p in payout:
+    # /1000000000000
+        amount = p['amount']/1000000000000
+        count = len(p['destinations'])
+        date = datetime.datetime.fromtimestamp(p['timestamp'])
+        amounts.append(amount)
+        counts.append(count)
+        dates.append(date)
+    amounts.reverse()
+    counts.reverse()
+    dates.reverse()
+    payout_insert = ""
+    for i in range(0,len(amounts)):
+        payout_insert += "{} XMR to {} Miners at {}<br/>".format(amounts[i], counts[i], dates[i])
+
     block_find_fh = open(config_items['block_find_out'])
     block_find = block_find_fh.read()
     block_find_fh.close()
@@ -40,6 +62,7 @@ def main():
     template_fh.close()
 #    template = template.replace("<!-- BLOCKFIND --!>", block_find)
 # temporary disable unsure I have the correct calculations in stats.py
+    template = template.replace("<!-- PAYOUTLIST --!>", payout_insert)
     template = template.replace("<!-- SITENAME --!>", config_items['sitename'])
     template = template.replace("<!-- POOLLOGO --!>", config_items['pool_logo'])
     blocks = blocks.split("\n")

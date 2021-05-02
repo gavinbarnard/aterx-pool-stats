@@ -31,7 +31,8 @@ def parse_config(config_file):
             'block_inout', # file to dump to with inspect data, and include in template build
             'site_ip', # endpoint to get stats from
             'script_dir', # where these scripts are located
-            'pool_logo'
+            'pool_logo', # pool logo file
+            'payout_file' # where to store payout json
         ]
         for key in config_keys:
             if key not in config.keys():

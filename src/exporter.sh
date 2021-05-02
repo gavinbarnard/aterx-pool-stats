@@ -23,5 +23,6 @@ script_dir=`jq -r .script_dir $CONFIG_FILE`
 $INSPECT -m $POOLDD > $blocks_file
 curl -s http://$site/stats > $STATS_DIR/latest-`date --iso-8601=seconds`.json
 find $STATS_DIR -name \*.json -size -300c -delete # removes broken stats files
+$script_dir/get_transfers.sh | jq .result.out > `jq -r .payout_file $CONFIG_FILE`
 python $script_dir/stats.py -c $CONFIG_FILE
 python $script_dir/report.py -c $CONFIG_FILE

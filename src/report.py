@@ -43,6 +43,7 @@ def main():
     template = template.replace("<!-- SITENAME --!>", config_items['sitename'])
     template = template.replace("<!-- POOLLOGO --!>", config_items['pool_logo'])
     blocks = blocks.split("\n")
+    del(blocks[len(blocks)-1])
     blocks.reverse()
     blocks = "<br>".join(blocks)
     template = template.replace("<!-- BLOCKLIST --!>", blocks)

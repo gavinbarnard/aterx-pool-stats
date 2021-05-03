@@ -35,9 +35,6 @@ def main():
         amounts.append(amount)
         counts.append(count)
         dates.append(date)
-    amounts.reverse()
-    counts.reverse()
-    dates.reverse()
     payout_insert = ""
     for i in range(0,len(amounts)):
         payout_insert += "{} XMR to {} Miners at {}<br/>".format(amounts[i], counts[i], dates[i])

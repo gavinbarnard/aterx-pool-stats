@@ -19,6 +19,12 @@ INSPECT=`jq -r .inspect $CONFIG_FILE`
 blocks_file=`jq -r .block_inout $CONFIG_FILE`
 site=`jq -r .site_ip $CONFIG_FILE`
 script_dir=`jq -r .script_dir $CONFIG_FILE`
+minerlist=`jq -r .minerlist $CONFIG_FILE`
+payouts_dir=`jq -r .payout_info_dir $CONFIG_FILE` 
+
+$INSPECT -p $POOLDD | awk '{print $1}' | sort | uniq > $minerlist
+
+for i in `cat $minerlist`; do $INSPECT -p $POOLDD | grep "$i" | sed 's:\n:<br/>:' > $payouts_dir/$i; done
 
 $INSPECT -m $POOLDD > $blocks_file
 curl -s http://$site/stats > $STATS_DIR/latest-`date --iso-8601=seconds`.json

@@ -105,7 +105,7 @@ def main():
         block_chance = 0
 
     block_fh = open(BLOCK_FIND_FILE, 'w')
-    block_fh.write("At current average pool hashrate vs the highest observed network hashrate will hopefully {} blocks every 30 days".format(block_chance))
+    block_fh.write("At current average pool hashrate vs the highest observed network hashrate will hopefully hit {} blocks every 30 days".format(block_chance))
     block_fh.close()
     #write out the files
     stats_out_fh = open(STATS_OUT_FILE, 'w')

@@ -62,11 +62,16 @@ def main():
     template = template.replace("<!-- PAYOUTLIST --!>", payout_insert)
     template = template.replace("<!-- SITENAME --!>", config_items['sitename'])
     template = template.replace("<!-- POOLLOGO --!>", config_items['pool_logo'])
+    final_blocks = ""
     blocks = blocks.split("\n")
     del(blocks[len(blocks)-1])
     blocks.reverse()
-    blocks = "<br>".join(blocks)
-    template = template.replace("<!-- BLOCKLIST --!>", blocks)
+    for block in blocks:
+        if "LOCKED" in block and not "UN" in block:
+            final_blocks = final_blocks + block + "<br/>"
+        if "ORPHANED" in block:
+            final_blocks = final_blocks + block + "<br/>"
+    template = template.replace("<!-- BLOCKLIST --!>", final_blocks)
     pool_hash = "Network HR vs Pool HR scale is roughly 1/{}".format(multi)
     template = template.replace("<!-- MULTI --!>", pool_hash)
     template = template.replace("<!-- AVERAGE --!>", pool_avg)

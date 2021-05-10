@@ -236,7 +236,9 @@ def application(environ, start_response):
     else:
         dark_mode = False
         wa = None
-
+    if "?" in request_uri:
+        splitter = request_uri.split("?")
+        request_uri = splitter[0]
     memcache_client = base.Client(('localhost',11211))
     last_api_time = memcache_client.get("{}_last".format(request_uri))
     usecache = False

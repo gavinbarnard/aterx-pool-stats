@@ -228,6 +228,11 @@ xmlhttp_rig.onreadystatechange = function()
 	if (this.readyState == 4 && this.status == 200)
 	{
 		rig_list = JSON.parse(this.responseText);
+		for(i = 0; i < rig_list.length; i++)
+		{
+			rig_list[i] = rig_list[i].replace("<", "&lt;")
+			rig_list[i] = rig_list[i].replace(">", "&gt;")
+		}
 		connected_rigs.innerHTML = rig_list;
 	}
 }

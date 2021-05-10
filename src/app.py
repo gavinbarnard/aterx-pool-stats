@@ -239,6 +239,8 @@ def application(environ, start_response):
     if "?" in request_uri:
         splitter = request_uri.split("?")
         request_uri = splitter[0]
+    if len(request_uri) > 128:
+        request_uri = request_uri[0:128]
     memcache_client = base.Client(('localhost',11211))
     last_api_time = memcache_client.get("{}_last".format(request_uri))
     usecache = False
@@ -255,6 +257,7 @@ def application(environ, start_response):
     else:
         usecache = True
     contype = "text/plain"
+    nothing = False
     if not usecache:
         if VERSION_PREFIX == request_uri[0:len(VERSION_PREFIX)]:
             if "{}blocks".format(VERSION_PREFIX) == request_uri:
@@ -277,11 +280,14 @@ def application(environ, start_response):
                 contype, body = json_pplns_estimate()
             else:
                 contype, body = html_generic_response("I got nothing for you man!")
+                nothing = True
         else:
+            nothing = True
             body = "This should not be served"
-        memcache_client.set("{}_last".format(request_uri), json.dumps([datetime.now().timestamp()]))
-        memcache_client.set("{}_contype".format(request_uri), json.dumps([contype]))
-        memcache_client.set("{}_body".format(request_uri), json.dumps([body]))
+        if not nothing:
+            memcache_client.set("{}_last".format(request_uri), json.dumps([datetime.now().timestamp()]))
+            memcache_client.set("{}_contype".format(request_uri), json.dumps([contype]))
+            memcache_client.set("{}_body".format(request_uri), json.dumps([body]))
     else:
         contype = memcache_client.get("{}_contype".format(request_uri))
         body = memcache_client.get("{}_body".format(request_uri))

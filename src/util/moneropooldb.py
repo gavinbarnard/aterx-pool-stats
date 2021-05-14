@@ -30,8 +30,15 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
+# adapted from the inspect-data script in the monero-pool 
+# https://github.com/jtgrassie/monero-pool/blob/master/tools/inspect-data
+#
+# pplns window payout based pool.c from monero-pool
+# this chews i/o use sparingly
+# and uses a payout value with 95% value of the last block
+# with a share multipler of 2 currently as a fixed value
+# https://github.com/jtgrassie/monero-pool/blob/master/src/pool.c#L923
 
-import argparse
 import lmdb
 from ctypes import *
 from datetime import datetime
@@ -175,7 +182,9 @@ def get_shares(path):
     return response
 
 def get_pplns_window_estimate(path):
+    # this chews i/os run sparringly
     blocks = get_mined(path)
+    block = None
     for ublock in blocks:
         if ublock['status'] == "UNLOCKED":
             block = ublock
@@ -202,28 +211,6 @@ def get_pplns_window_estimate(path):
                     return dt
                 if not curs.prev():
                     return dt
-
-#def main():
-#    parser = argparse.ArgumentParser()
-#    group = parser.add_mutually_exclusive_group(required=True)
-#    group.add_argument('-b', '--balances', action='store_true',
-#            help='list miner balances')
-#    group.add_argument('-p', '--payments', action='store_true',
-#            help='list payments made')
-#    group.add_argument('-m', '--mined', action='store_true',
-#            help='list mined blocks')
-#    group.add_argument('-s', '--shares', action='store_true',
-#            help='list recent shares')
-#    parser.add_argument('database', help='path to database')
-#    args = parser.parse_args()
-#    if args.balances:
-#        print_balance(args.database)
-#    elif args.payments:
-#        print_payements(args.database)
-#    elif args.mined:
-#        print_mined(args.database)
-#    elif args.shares:
-#        print_shares(args.database)
 
 if __name__ == '__main__':
     pass

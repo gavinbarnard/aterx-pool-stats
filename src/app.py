@@ -28,7 +28,7 @@ def pool_page():
 def json_pplns_estimate():
     pplns_est = get_pplns_window_estimate(config_items['pooldd'])
     return json_generic_response({"pplns_end":pplns_est})
-    
+
 def json_graph_stats():
     stat_array = []
     highest_p = 0
@@ -258,6 +258,8 @@ def application(environ, start_response):
         usecache = False
     else:
         usecache = True
+    if "{}payments".format(VERSION_PREFIX) == request_uri:
+        usecache = False
     contype = "text/plain"
     nothing = False
     if not usecache:

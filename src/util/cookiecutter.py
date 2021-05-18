@@ -1,11 +1,12 @@
 def cookiecutter(http_cookie, cookie_name=None):
-    cookies = http_cookie.split("; ")
+    cookies = http_cookie.split(";")
     response = {}
     for cookie in cookies:
         try:
             cname, cvalue = cookie.split("=")
+            cname = cname.strip()
         except Exception as e:
-            return {}
+            return None
         if cookie_name:
             if isinstance(cookie_name, str):
                 if cookie_name == cname:

@@ -23,9 +23,8 @@ def parse_config(config_file):
             'stats_dir', #path to store stats files
             'v0_template_html', # path to template html file
             'site_ip', # endpoint to get stats from
-            'script_dir', # where these scripts are located
+            'script_dir', # where path to the /src/ dir these scripts are located
             'pool_logo', # pool logo file
-            'payout_file', # where to store payout json
             'block_records', # path to dir of stat files before block hits
             'monerod_rpc_port', # monerod rpc port
             'monero_wallet_rpc_port'

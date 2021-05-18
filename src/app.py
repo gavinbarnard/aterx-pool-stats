@@ -3,11 +3,10 @@ from glob import glob
 from math import floor
 from datetime import datetime
 from pymemcache.client import base
-from os.path import getmtime
 from os.path import exists
 
 from util.config import parse_config, cli_options
-from util.moneropooldb import get_balance, get_mined, get_payments, get_pplns_window_estimate
+from util.moneropooldb import get_mined, get_payments, get_pplns_window_estimate
 from util.cookiecutter import cookiecutter
 from util.rpc import monerod_get_block, monerod_get_height, moneropool_get_stats, wallet_get_transfers_out
 
@@ -105,7 +104,10 @@ def json_payments_summary():
     for payment in payments:
         bb={}
         bb['reward'] = payment['amount']
-        bb['miner_count'] = len(payment['destinations'])
+        if "destinations" in payments:
+            bb['miner_count'] = len(payment['destinations'])
+        else:
+            bb['miner_count'] = 'Unknown'
         bb['timestamp'] = payment['timestamp']
         response.append(bb)
     return json_generic_response(response)
@@ -270,8 +272,6 @@ def application(environ, start_response):
                 contype, body = json_payments_summary()
             elif "{}multi".format(VERSION_PREFIX) == request_uri:
                 contype, body = json_get_multi()
-            elif "{}payments.html".format(VERSION_PREFIX) == request_uri:
-                contype, body = payment_page(dark_mode)
             elif "{}pool.html".format(VERSION_PREFIX) == request_uri:
                 contype, body = pool_page()
             elif "{}graph_stats.json".format(VERSION_PREFIX) == request_uri:

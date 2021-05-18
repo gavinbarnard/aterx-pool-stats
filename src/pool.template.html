@@ -311,7 +311,7 @@ function updateBlocks(block_data)
 function togglePayout()
 {
 	ptype = document.getElementById("payout_type");
-	/* if (ptype.innerHTML == "pool")
+	if (ptype.innerHTML == "pool")
 	{
 		ptype.innerHTML = "personal";
 		xmlhttp_payments.open("GET", "/0/payments",true);
@@ -322,7 +322,7 @@ function togglePayout()
 		ptype.innerHTML = "pool";
 		xmlhttp_payments.open("GET", "/0/payments.summary",true);
 		xmlhttp_payments.send();
-	} */
+	}
 }
 
 function toggleDark()

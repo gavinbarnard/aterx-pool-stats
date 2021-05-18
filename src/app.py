@@ -104,7 +104,7 @@ def json_payments_summary():
     for payment in payments:
         bb={}
         bb['reward'] = payment['amount']
-        if "destinations" in payments:
+        if "destinations" in payment:
             bb['miner_count'] = len(payment['destinations'])
         else:
             bb['miner_count'] = 'Unknown'

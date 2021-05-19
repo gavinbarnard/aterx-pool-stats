@@ -273,6 +273,9 @@ def application(environ, start_response):
     if "/local{}pplns_est_generate".format(VERSION_PREFIX) == request_uri:
         contype, body = json_pplns_estimate()
         request_uri = "{}pplns_est".format(VERSION_PREFIX)
+        memcache_client.set("{}_last".format(request_uri), json.dumps([datetime.now().timestamp()]))
+        memcache_client.set("{}_contype".format(request_uri), json.dumps([contype]))
+        memcache_client.set("{}_body".format(request_uri), json.dumps([body]))
     elif not usecache:
         if VERSION_PREFIX == request_uri[0:len(VERSION_PREFIX)]:
             if "{}blocks".format(VERSION_PREFIX) == request_uri:

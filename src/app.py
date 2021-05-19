@@ -253,7 +253,7 @@ def application(environ, start_response):
         last_api_time = json.loads(last_api_time)[0]
     now = datetime.now().timestamp()
     if "pplns_est" in request_uri:
-        time_multi = 10
+        time_multi = 60
     if now - last_api_time > (30 * time_multi) or last_api_time == 0:
         usecache = False
     else:

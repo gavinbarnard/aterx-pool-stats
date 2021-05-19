@@ -252,17 +252,28 @@ def application(environ, start_response):
     else:
         last_api_time = json.loads(last_api_time)[0]
     now = datetime.now().timestamp()
-    if "pplns_est" in request_uri:
-        time_multi = 60
     if now - last_api_time > (30 * time_multi) or last_api_time == 0:
         usecache = False
     else:
+        usecache = True
+    if "{}pplns_est".format(VERSION_PREFIX) == request_uri:
         usecache = True
     if "{}payments".format(VERSION_PREFIX) == request_uri:
         usecache = False
     contype = "text/plain"
     nothing = False
-    if not usecache:
+    
+    # non parallel friendly! only let one thread do this at a time
+    # this will update the memcache result for /0/pplns_est
+    # this is the quickest way to make sure only 1 thread
+    # executes this at a time.
+    # schedule a cronjob to hit curl http://localhost:5252/local/0/pplns_est_generate
+    # to update this do not expose this API to the world
+    # may the spirits have mercy on you if you do
+    if "/local{}pplns_est_generate".format(VERSION_PREFIX) == request_uri:
+        contype, body = json_pplns_estimate()
+        request_uri = "{}pplns_est".format(VERSION_PREFIX)
+    elif not usecache:
         if VERSION_PREFIX == request_uri[0:len(VERSION_PREFIX)]:
             if "{}blocks".format(VERSION_PREFIX) == request_uri:
                 contype, body = json_blocks_response()
@@ -278,8 +289,6 @@ def application(environ, start_response):
                 contype, body = pool_page()
             elif "{}graph_stats.json".format(VERSION_PREFIX) == request_uri:
                 contype, body = json_graph_stats()
-            elif "{}pplns_est".format(VERSION_PREFIX) == request_uri:
-                contype, body = json_pplns_estimate()
             else:
                 contype, body = html_generic_response("I got nothing for you man!")
                 nothing = True

@@ -223,7 +223,6 @@ def read_files(files):
     return response
 
 def application(environ, start_response):
-    blocks = get_mined(pooldd)
     request_uri = environ['REQUEST_URI']
     if 'HTTP_COOKIE' in environ.keys():
         cookies = cookiecutter(environ['HTTP_COOKIE'])
@@ -298,7 +297,7 @@ def application(environ, start_response):
         else:
             nothing = True
             body = "This should not be served"
-        if not nothing:
+        if not nothing and "{}payments".format(VERSION_PREFIX) != request_uri:
             memcache_client.set("{}_last".format(request_uri), json.dumps([datetime.now().timestamp()]))
             memcache_client.set("{}_contype".format(request_uri), json.dumps([contype]))
             memcache_client.set("{}_body".format(request_uri), json.dumps([body]))

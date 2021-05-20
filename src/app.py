@@ -18,7 +18,6 @@ def pool_page():
     contype = "text/html"
     html = ""
     if (exists(config_items['v0_template_html'])):
-        pool_stats = moneropool_get_stats(config_items['site_ip'])
         with open(config_items['v0_template_html'], 'r') as fh:
             html = fh.read()
         html = html.replace("<!-- SITENAME --!>", config_items['sitename'])

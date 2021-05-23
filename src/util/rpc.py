@@ -1,5 +1,6 @@
 import json
 import requests
+from operator import itemgetter
 
 def monerod_get_block(rpc_port, block_height):
     # {"jsonrpc":"2.0","id":"0","method":"get_block", 
@@ -39,4 +40,5 @@ def wallet_get_transfers_out(rpc_port):
     }
     r = requests.get("http://localhost:{}/json_rpc".format(rpc_port), data=json.dumps(data))
     r.raise_for_status()
-    return r.json()['result']['out']
+    out_dict = sorted(r.json()['result']['out'], key=itemgetter('timestamp'), reverse=True)
+    return out_dict

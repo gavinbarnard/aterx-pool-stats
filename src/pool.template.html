@@ -378,7 +378,7 @@ function updateGraph(graph_data)
 	}
 	ctx.fillRect(0, 0, 900,150);
 	phr = 0;
-	for (n = 0; n < 900; n++) 
+	for (n = 0; n < graph_data.length; n++) 
 	{
 		phr = phr + graph_data[n]['pr']
 		if ( (n+1)%10 == 0 )

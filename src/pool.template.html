@@ -310,9 +310,8 @@ function updateBlocks(block_data)
 	}
 	avgeff = maxeff/(block_data.length-uncounted_blocks);
 	block_t.innerHTML = block_t.innerHTML + "<tr><td></td><td></td><td></td><td></td><td></td><td>Average Effort</td><td>"+avgeff.toFixed(2)+"%</td></tr>"
-	// block_count = document.getElementById("block_count");
-	//block_count.innerHTML = "We have found " + found_within_thirty + " blocks in the last 30 days";
-	console.log(found_within_thirty);
+	block_count = document.getElementById("block_count");
+	block_count.innerHTML = "We have found " + found_within_thirty + " blocks in the last 30 days";
 }
 
 function togglePayout()

@@ -287,12 +287,13 @@ function updatePayments(payment_data)
 }
 function updateBlocks(block_data)
 {
-	thirty_days_ago = Date.now() - (1000 * 60 * 60 * 24 * 30)
+	let now = new Date();
+	let thirty_days_ago = new Date(now.setDate(now.getDate() - 30));
 	var found_within_thirty = 0;
 	block_t = document.getElementById("block_table");
 	block_t.innerHTML = "<tr><td>Height</td><td>Status</td><td>Hash Match</td><td>To Unlock</td><td>Date</td><td>Reward</td><td>Effort</td></tr>";
-	maxeff = 0
-	uncounted_blocks = 0
+	maxeff = 0;
+	uncounted_blocks = 0;
 	for (i = 0; i < block_data.length; i++)
 	{
 		if (block_data[i]['status'] != "ORPHANED") {
@@ -311,6 +312,7 @@ function updateBlocks(block_data)
 	block_t.innerHTML = block_t.innerHTML + "<tr><td></td><td></td><td></td><td></td><td></td><td>Average Effort</td><td>"+avgeff.toFixed(2)+"%</td></tr>"
 	// block_count = document.getElementById("block_count");
 	//block_count.innerHTML = "We have found " + found_within_thirty + " blocks in the last 30 days";
+	console.log(found_within_thirty);
 }
 
 function togglePayout()

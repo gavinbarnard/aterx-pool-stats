@@ -302,7 +302,7 @@ function updateBlocks(block_data)
 			uncounted_blocks = uncounted_blocks + 1;
 		}
 		d = new Date(block_data[i]['timestamp']*1000);
-		if (block_data[i]['timestamp'] >= thirty_days_ago)
+		if (block_data[i]['timestamp']*1000 >= thirty_days_ago)
 		{
 			found_within_thirty = found_within_thirty + 1;
 		}

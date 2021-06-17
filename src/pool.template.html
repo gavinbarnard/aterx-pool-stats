@@ -406,7 +406,7 @@ function updateGraph(graph_data)
 	poolavg = document.getElementById("poolavg");
 	poolavg.innerHTML = format_hashrate(pavg);
 	blockfind = document.getElementById("blockfind");
-	b_chance = pavg / graph_data[899]['nr'] * 30 * 24 * 30
+	b_chance = pavg / graph_data[graph_data.length-1]['nr'] * 30 * 24 * 30
 	if (b_chance>2)
 	{
 		b_chance--;

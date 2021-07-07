@@ -76,7 +76,7 @@ def format_timestamp(timestamp):
     return dt.strftime('%Y-%m-%d %H:%M:%S')
 
 def format_amount(amount):
-    return '{0:.6f}'.format(amount/1e12)
+    return '{0:.12f}'.format(amount/1e12)
 
 def format_address(address):
     return address

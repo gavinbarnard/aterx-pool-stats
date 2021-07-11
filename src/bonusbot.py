@@ -100,7 +100,7 @@ def reduce_draw_pool():
     highest_wins = get_highest_win_count()
     remove_list = []
     for winner in winner_pool:
-        if len(winner['wins'] >= highest_wins and highest_wins != 0):
+        if len(winner['wins']) >= highest_wins and highest_wins != 0:
             remove_list.append(winner)
     for winner in remove_list:
         winner_pool.remove(winner)

@@ -1,5 +1,5 @@
 import json
-from time import time
+from time import time, sleep
 from os.path import exists
 from random import randint
 
@@ -121,7 +121,9 @@ def pull_winner():
     add_winner(winner['address'])
     return get_latest_winner()
 
+winner1 = pull_winner()
+sleep(2)
+winner2 = pull_winner()
 
-print(pull_winner())
-
-print(pull_winner())
+print(winner1)
+print(winner2)

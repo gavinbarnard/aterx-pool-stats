@@ -1,8 +1,9 @@
 import json
+from time import time
+from os.path import exists
 from util.moneropooldb import get_balance
 from util.rpc import moneropool_get_stats
 from util.config import parse_config, cli_options
-from os.path import exists
 
 config_items = parse_config(cli_options())
 pooldd = config_items['pooldd']
@@ -36,4 +37,62 @@ def get_miner_pool():
             addresses.remove(ban)
     return addresses
 
-print(json.dumps(get_miner_pool(), indent=True))
+def get_winner_pool():
+    winner_pool = []
+    winner_file = "{}/winners.json".format(config_items['bonus_bot_path'])
+    if exists(winner_file):
+        with open(winner_file,'r') as fh:
+            winner_content = fh.read()
+        winner_pool = json.loads(winner_content)
+    return winner_pool
+
+def add_winner(wa=None):
+    if (wa):
+        winner_pool = get_winner_pool()
+        dt = int(time())
+        found = False
+        for winner in winner_pool:
+            if winner['address'] == wa:
+                winner['wins'].append(dt)
+                found = True
+        if found == False:
+            winner_pool.append({
+                'address': wa,
+                'wins': [dt]
+            }
+            )
+        winner_file = "{}/winners.json".format(config_items['bonus_bot_path'])
+        fh = open(winner_file, 'w')
+        fh.write(json.dumps(winner_pool))
+
+def get_latest_winner():
+    winner_pool = get_winner_pool()
+    latest_winner = ""
+    dt = 0
+    for winner in winner_pool:
+        for windt in winner['wins']:
+            if windt > dt:
+                dt = windt
+                latest_winner = winner['address']
+
+def get_highest_win_count():
+    winner_pool = get_winner_pool()
+    highest_wins = 0
+    for winner in winner_pool:
+        if len(winner['wins']) > highest_wins:
+            highest_wins = len(winner('wins'))
+    return highest_wins
+
+def reduce_draw_pool():
+    winner_pool = get_winner_pool()
+    highest_wins = get_highest_win_count()
+    remove_list = []
+    for winner in winner_pool:
+        if len(winner['wins'] >= highest_wins and highest_wins != 0):
+            remove_list.append(winner)
+    for winner in remove_list:
+        winner_pool.remove(winner)
+    return winner_pool
+
+
+print(json.dumps(reduce_draw_pool(), indent=True))

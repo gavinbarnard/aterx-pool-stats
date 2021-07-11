@@ -1,6 +1,8 @@
 import json
 from time import time
 from os.path import exists
+
+from requests.api import get
 from util.moneropooldb import get_balance
 from util.rpc import moneropool_get_stats
 from util.config import parse_config, cli_options
@@ -84,7 +86,17 @@ def get_highest_win_count():
     return highest_wins
 
 def reduce_draw_pool():
+    miner_pool = get_miner_pool()
     winner_pool = get_winner_pool()
+    winners = []
+    for winner in winner_pool:
+        winners.append(winner['address'])
+    for miner in miner_pool:
+        if miner not in winners:
+            winner_pool.append({
+                'address': miner,
+                'wins': []
+            })
     highest_wins = get_highest_win_count()
     remove_list = []
     for winner in winner_pool:

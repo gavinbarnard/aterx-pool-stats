@@ -77,6 +77,7 @@ def get_latest_winner():
             if windt > dt:
                 dt = windt
                 latest_winner = winner['address']
+    return latest_winner
 
 def get_highest_win_count():
     winner_pool = get_winner_pool()

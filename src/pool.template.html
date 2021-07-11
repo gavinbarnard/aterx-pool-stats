@@ -109,6 +109,10 @@
 	<small><a target="_blank" class="alight" href="https://github.com/jtgrassie/monero-pool">https://github.com/jtgrassie/monero-pool</a></small><br/>
 	<small><a target="_blank" class="alight" href="https://www.reddit.com/r/pool_aterx_com">Pool subreddit</a></small><br/>
 	<small onClick="toggleDark()">Toggle dark mode</small></br></br>
+	<div>
+		BonusRig1 is currently pointed at: <div id="bonus_rig"></div><br/>
+		BonusRig1 rotate hourly between anyone with a pending balance, or a previous payout, with atleast one worker, and one hash per second.<br/>
+	</div>
 	<div id="shittygraph_div">
 		<canvas id="shittygraph" width="900" height="150" onmousemove="poolstats(event);" onmouseleave="hidepoolstats();"></canvas>
 	</div>
@@ -186,11 +190,21 @@ var xmlhttp_block = new XMLHttpRequest();
 var xmlhttp_payments = new XMLHttpRequest();
 var xmlhttp_multi = new XMLHttpRequest();
 var xmlhttp_pplns = new XMLHttpRequest();
+var xmlhttp_bonus = new XMLHttpRequest();
 var graph = document.getElementById("shittygraph");
 var connected_rigs = document.getElementById("rig_list");
 var graph_data;
 var rig_list;
 var dark_mode = 0;
+xmlhttp_bonus.onreadystatechange = function()
+{
+	if (this.readyState == 4 && this.status == 200)
+	{
+		bonus_html = document.getElementById("bonus_rig");
+		address = this.responseText.substring(0,6);
+		bonus_html.innerHTML = address;
+	}
+}
 xmlhttp_pplns.onreadystatechange = function()
 {
 	if (this.readyState == 4 && this.status == 200)
@@ -255,7 +269,8 @@ xmlhttp_payments.open("GET", "/0/payments.summary", true);
 xmlhttp_payments.send();
 xmlhttp_multi.open("GET","/0/multi", true);
 xmlhttp_multi.send();
-
+xmlhttp_bonus.open("GET","/0/bonus_address", true);
+xmlhttp_bonus.send();
 function updatePayments(payment_data)
 {
 	ptype = document.getElementById("payout_type");

@@ -92,8 +92,11 @@ def reduce_draw_pool():
     miner_pool = get_miner_pool()
     winner_pool = get_winner_pool()
     winners = []
+    remove_list = []
     for winner in winner_pool:
         winners.append(winner['address'])
+        if winner['address'] not in miner_pool:
+            remove_list.append(winner['address'])
     for miner in miner_pool:
         if miner not in winners:
             winner_pool.append({
@@ -101,9 +104,8 @@ def reduce_draw_pool():
                 'wins': []
             })
     highest_wins = get_highest_win_count()
-    remove_list = []
     for winner in winner_pool:
-        if len(winner['wins']) >= highest_wins and highest_wins != 0:
+        if len(winner['wins']) >= highest_wins and highest_wins != 0 and winner['address'] not in remove_list:
             remove_list.append(winner)
     if len(remove_list) < len(winner_pool):
         for winner in remove_list:

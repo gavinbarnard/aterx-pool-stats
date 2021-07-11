@@ -9,6 +9,7 @@ from util.config import parse_config, cli_options
 from util.moneropooldb import get_mined, get_payments, get_pplns_window_estimate
 from util.cookiecutter import cookiecutter
 from util.rpc import monerod_get_block, monerod_get_height, moneropool_get_stats, wallet_get_transfers_out
+from bonusbot import get_latest_winner
 
 VERSION_PREFIX = "/0/"
 config_items = parse_config(cli_options())
@@ -290,6 +291,9 @@ def application(environ, start_response):
                 contype, body = pool_page()
             elif "{}graph_stats.json".format(VERSION_PREFIX) == request_uri:
                 contype, body = json_graph_stats()
+            elif "{}/bonus_address".format(VERSION_PREFIX) == request_uri:
+                response = get_latest_winner()
+                contype, body = json_generic_response(response)
             else:
                 contype, body = html_generic_response("I got nothing for you man!")
                 nothing = True

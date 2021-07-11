@@ -132,11 +132,5 @@ def win_stats():
         )
     return win_stats
 
-winner1 = pull_winner()
-sleep(2)
-winner2 = pull_winner()
-
-print(winner1)
-print(winner2)
-
-print(json.dumps(win_stats()))
+if __name__ == "__main__":
+    pull_winner()

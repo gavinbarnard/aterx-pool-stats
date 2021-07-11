@@ -67,6 +67,7 @@ def add_winner(wa=None):
         winner_file = "{}/winners.json".format(config_items['bonus_bot_path'])
         fh = open(winner_file, 'w')
         fh.write(json.dumps(winner_pool))
+        fh.close()
 
 def get_latest_winner():
     winner_pool = get_winner_pool()
@@ -112,7 +113,7 @@ def reduce_draw_pool():
 def pull_winner():
     draw_pool = reduce_draw_pool()
     max_rand = len(draw_pool)
-    choice = randint(0, max_rand)
+    choice = randint(0, max_rand-1)
     winner = draw_pool[choice]
     add_winner(winner['address'])
     return get_latest_winner()

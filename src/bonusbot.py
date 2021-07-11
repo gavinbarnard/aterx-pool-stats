@@ -83,7 +83,7 @@ def get_highest_win_count():
     highest_wins = 0
     for winner in winner_pool:
         if len(winner['wins']) > highest_wins:
-            highest_wins = len(winner('wins'))
+            highest_wins = len(winner['wins'])
     return highest_wins
 
 def reduce_draw_pool():

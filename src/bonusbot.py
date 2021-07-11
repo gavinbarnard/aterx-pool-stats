@@ -112,9 +112,12 @@ def reduce_draw_pool():
 
 def pull_winner():
     draw_pool = reduce_draw_pool()
-    winner = choice(draw_pool)
-    add_winner(winner['address'])
-    return get_latest_winner()
+    if (len(draw_pool) > 0):
+        winner = choice(draw_pool)
+        add_winner(winner['address'])
+        return get_latest_winner()
+    else:
+        return None
 
 def win_stats():
     win_stats = []

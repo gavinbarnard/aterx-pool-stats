@@ -1,7 +1,7 @@
 import json
 from time import time, sleep
 from os.path import exists
-from random import randint
+from random import choice
 
 from requests.api import get
 from util.moneropooldb import get_balance
@@ -112,12 +112,7 @@ def reduce_draw_pool():
 
 def pull_winner():
     draw_pool = reduce_draw_pool()
-    max_rand = len(draw_pool)
-    if max_rand > 1:
-        choice = randint(0, max_rand-1)
-    else:
-        choice = 0
-    winner = draw_pool[choice]
+    winner = choice(draw_pool)
     add_winner(winner['address'])
     return get_latest_winner()
 

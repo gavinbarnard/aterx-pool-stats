@@ -121,9 +121,22 @@ def pull_winner():
     add_winner(winner['address'])
     return get_latest_winner()
 
+def win_stats():
+    win_stats = []
+    winner_pool = get_winner_pool()
+    for winner in winner_pool:
+        win_stats.append(
+            {
+                "address": winner['address'],
+                "win_count": len(winner_pool['wins'])
+            }
+        )
+
 winner1 = pull_winner()
 sleep(2)
 winner2 = pull_winner()
 
 print(winner1)
 print(winner2)
+
+print(json.dumps(win_stats()))

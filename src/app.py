@@ -291,7 +291,7 @@ def application(environ, start_response):
                 contype, body = pool_page()
             elif "{}graph_stats.json".format(VERSION_PREFIX) == request_uri:
                 contype, body = json_graph_stats()
-            elif "{}/bonus_address".format(VERSION_PREFIX) == request_uri:
+            elif "{}bonus_address".format(VERSION_PREFIX) == request_uri:
                 response = get_latest_winner()
                 contype, body = json_generic_response(response)
             else:

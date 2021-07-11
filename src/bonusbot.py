@@ -129,6 +129,7 @@ def win_stats():
                 "win_count": len(winner['wins'])
             }
         )
+    return win_stats
 
 winner1 = pull_winner()
 sleep(2)

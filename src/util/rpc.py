@@ -20,8 +20,12 @@ def monerod_get_height(rpc_port):
     r.raise_for_status()
     return r.json()['height']
 
-def moneropool_get_stats(site_ip):
-    r = requests.get("http://{}/stats".format(site_ip))
+def moneropool_get_stats(site_ip, wa=None):
+    cookies = None
+    if (wa):
+        cookies = {}
+        cookies['wa'] = wa
+    r = requests.get("http://{}/stats".format(site_ip), cookies=cookies)
     r.raise_for_status()
     return r.json()
 

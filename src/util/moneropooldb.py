@@ -85,6 +85,7 @@ def address_from_key(key):
     return key.decode('utf-8').rstrip('\0')
 
 def get_balance(path, waddress=None):
+    j = c_longlong.from_param(9999)
     response = []
     env = lmdb.open(path, readonly=True, max_dbs=1, create=False)
     balance = env.open_db('balance'.encode())

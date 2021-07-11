@@ -126,7 +126,7 @@ def win_stats():
         win_stats.append(
             {
                 "address": winner['address'],
-                "win_count": len(winner_pool['wins'])
+                "win_count": len(winner['wins'])
             }
         )
 

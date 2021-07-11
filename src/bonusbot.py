@@ -113,7 +113,10 @@ def reduce_draw_pool():
 def pull_winner():
     draw_pool = reduce_draw_pool()
     max_rand = len(draw_pool)
-    choice = randint(0, max_rand-1)
+    if max_rand > 1:
+        choice = randint(0, max_rand-1)
+    else:
+        choice = 0
     winner = draw_pool[choice]
     add_winner(winner['address'])
     return get_latest_winner()

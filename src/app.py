@@ -15,11 +15,64 @@ VERSION_PREFIX = "/0/"
 config_items = parse_config(cli_options())
 pooldd = config_items['pooldd']
 
+
+def data_gif():
+    contype = "image/gif"
+    gif = ""
+    if exists("data.gif"):
+        with open("data.gif", 'rb') as fh:
+            gif = fh.read()
+    return contype, gif
+
 def pool_page():
     contype = "text/html"
     html = ""
     if (exists(config_items['v0_template_html'])):
         with open(config_items['v0_template_html'], 'r') as fh:
+            html = fh.read()
+        html = html.replace("<!-- SITENAME --!>", config_items['sitename'])
+        html = html.replace("<!-- POOL_LOGO --!>", config_items['pool_logo'])
+    return contype, html
+
+def block_page(block):
+    contype = "text/html"
+    html = ""
+    block_data = "<table>"
+    monero_block = monerod_get_block(config_items['monerod_rpc_port'], block, config_items['monerod_ip'])
+    for k in monero_block.keys():
+        if k == "block_header":
+            block_data = block_data + "<tr><td>block_header</td><td><table>"
+            for bd in monero_block[k].keys():
+                block_data = block_data + "<tr><td>{}</td><td>{}</td></tr>".format(bd,json.dumps(monero_block[k][bd], indent=True))
+            block_data = block_data + "</table></td></tr>"
+        elif k == "json":
+            block_data = block_data + "<tr><td>json</td><td><table>"
+            bd_json = json.loads(monero_block[k])
+            for bd in bd_json.keys():
+                if bd == "miner_tx":
+                    block_data = block_data + "<tr><td>miner_tx</td><td><table>"
+                    for tx in bd_json[bd].keys():
+                        block_data = block_data + "<tr><td>{}</td><td>{}</td></tr>".format(tx, json.dumps(bd_json[bd][tx], indent=True))
+                    block_data = block_data + "</table></td></tr>"
+                else:
+                    block_data = block_data + "<tr><td>{}</td><td>{}</td></tr>".format(bd,json.dumps(bd_json[bd], indent=True))
+            block_data = block_data + "</table></td></tr>"
+        else:
+            block_data = block_data + "<tr><td>{}</td><td><pre>{}</pre></td></tr>".format(k,json.dumps(monero_block[k], indent=True))
+    block_data = block_data + "</table>"
+    if (exists("block.template.html")):
+        with open("block.template.html", 'r') as fh:
+            html = fh.read()
+        html = html.replace("<!-- SITENAME --!>", config_items['sitename'])
+        html = html.replace("<!-- POOL_LOGO --!>", config_items['pool_logo'])
+        html = html.replace("<!-- BLOCKDATA --!>", block_data)
+    return contype, html
+
+def blockui_page():
+    contype = "text/html"
+    html = ""
+    if (exists("blockui.template.html")):
+        with open("blockui.template.html", 'r') as fh:
             html = fh.read()
         html = html.replace("<!-- SITENAME --!>", config_items['sitename'])
         html = html.replace("<!-- POOL_LOGO --!>", config_items['pool_logo'])
@@ -112,19 +165,19 @@ def json_payments_summary():
         response.append(bb)
     return json_generic_response(response)
 
-def json_blocks_all_response():
+def json_blocks_all_really_response():
     effort_data = {}
     final_blocks = []
     pool_blocks = get_mined(pooldd)
     block_records = glob("{}/*.json".format(config_items['block_records']))
-    net_height = monerod_get_height(config_items['monerod_rpc_port'])
+    net_height = monerod_get_height(config_items['monerod_rpc_port'], config_items['monerod_ip'])
     for block in block_records:
         with open(block, 'r') as fh:
             block_d = fh.read()
         b = json.loads(block_d)
         effort_data[b['network_height']] = b
     for block in pool_blocks:
-        real_block = monerod_get_block(config_items['monerod_rpc_port'], block['height'])
+        real_block = monerod_get_block(config_items['monerod_rpc_port'], block['height'], config_items['monerod_ip'])
         if block['height']-1 in effort_data.keys():
             effort = effort_data[block['height']-1]['round_hashes']/effort_data[block['height']-1]['network_hashrate']
             effort = round(effort, 2)
@@ -150,10 +203,49 @@ def json_blocks_all_response():
     final_blocks.reverse()
     return json_generic_response(final_blocks)
 
+def json_blocks_all_response():
+    effort_data = {}
+    final_blocks = []
+    pool_blocks = get_mined(pooldd)
+    block_records = glob("{}/*.json".format(config_items['block_records']))
+    net_height = monerod_get_height(config_items['monerod_rpc_port'], config_items['monerod_ip'])
+    for block in block_records:
+        with open(block, 'r') as fh:
+            block_d = fh.read()
+        b = json.loads(block_d)
+        effort_data[b['network_height']] = b
+    for block in pool_blocks:
+        real_block = monerod_get_block(config_items['monerod_rpc_port'], block['height'], config_items['monerod_ip'])
+        if block['height']-1 in effort_data.keys():
+            effort = effort_data[block['height']-1]['round_hashes']/effort_data[block['height']-1]['network_hashrate']
+            effort = round(effort, 2)
+        else:
+            effort = 0
+        bb = {}
+        bb['height'] = block['height']
+        bb['timestamp'] = real_block['block_header']['timestamp']
+        bb['reward'] = real_block['block_header']['reward']
+        if block['status'] == "ORPHANED":
+            bb['reward'] = 0
+        bb['effort'] = effort
+        bb['status'] = block['status']
+        json_inside_json = json.loads(real_block['json'])
+        bb['hash_match'] = False
+        if block['hash'].encode('utf-8') == real_block['block_header']['hash'].encode('utf-8'):
+            bb['hash_match'] = True
+        bb['unlock_height'] = json_inside_json['miner_tx']['unlock_time']
+        bb['blocks_to_unlock'] = bb['unlock_height'] - net_height
+        if bb['blocks_to_unlock'] < 0:
+            bb['blocks_to_unlock'] = 0
+        final_blocks.append(bb)
+    final_blocks.reverse()
+    final_blocks = final_blocks[:30]
+    return json_generic_response(final_blocks)
+
 def json_blocks_response():
     effort_data = {}
     final_blocks = []
-    net_height = monerod_get_height(config_items['monerod_rpc_port'])
+    net_height = monerod_get_height(config_items['monerod_rpc_port'], config_items['monerod_ip'])
     pool_blocks = get_mined(pooldd)
     block_records = glob("{}/*.json".format(config_items['block_records']))
     for block in block_records:
@@ -162,7 +254,7 @@ def json_blocks_response():
         b = json.loads(block_d)
         effort_data[b['network_height']] = b
     for block in pool_blocks:
-        real_block = monerod_get_block(config_items['monerod_rpc_port'], block['height'])
+        real_block = monerod_get_block(config_items['monerod_rpc_port'], block['height'], config_items['monerod_ip'])
         if block['height']-1 in effort_data.keys():
             effort = effort_data[block['height']-1]['round_hashes']/effort_data[block['height']-1]['network_hashrate']
             effort = round(effort, 2)
@@ -187,6 +279,7 @@ def json_blocks_response():
             bb['status'] = block['status']
             final_blocks.append(bb)
     final_blocks.reverse()
+    final_blocks = final_blocks[:30]
     return json_generic_response(final_blocks)
 
 def json_generic_response(generic_item):
@@ -237,9 +330,19 @@ def application(environ, start_response):
     else:
         dark_mode = False
         wa = None
+    parameters = {}
     if "?" in request_uri:
         splitter = request_uri.split("?")
         request_uri = splitter[0]
+        parameters = splitter[1]
+        print(parameters)
+    if parameters:
+        final_p = {}
+        para_kv = parameters.split("&")
+        for para in para_kv:
+            k, v = para.split("=")
+            final_p[k]=v
+        parameters = final_p
     if len(request_uri) > 128:
         request_uri = request_uri[0:128]
     memcache_client = base.Client(('localhost',11211))
@@ -251,7 +354,7 @@ def application(environ, start_response):
     else:
         last_api_time = json.loads(last_api_time)[0]
     now = datetime.now().timestamp()
-    if now - last_api_time > (30 * time_multi) or last_api_time == 0:
+    if now - last_api_time > (30 * time_multi) or last_api_time == 0 or len(parameters) > 0:
         usecache = False
     else:
         usecache = True
@@ -281,6 +384,8 @@ def application(environ, start_response):
                 contype, body = json_blocks_response()
             elif "{}blocks.all".format(VERSION_PREFIX) == request_uri:
                 contype, body = json_blocks_all_response()
+            elif "{}blocks.all.really".format(VERSION_PREFIX) == request_uri:
+                contype, body = json_blocks_all_really_response()
             elif "{}payments".format(VERSION_PREFIX) == request_uri and len(wa) > 0:
                 contype, body = json_generic_response(get_payments(pooldd, wa))
             elif "{}payments.summary".format(VERSION_PREFIX) == request_uri:
@@ -289,6 +394,14 @@ def application(environ, start_response):
                 contype, body = json_get_multi()
             elif "{}pool.html".format(VERSION_PREFIX) == request_uri:
                 contype, body = pool_page()
+            elif "{}blockui.html".format(VERSION_PREFIX) == request_uri:
+                if parameters:
+                    if "block" in parameters.keys():
+                        contype, body = block_page(parameters['block'])
+                else:
+                    contype, body = blockui_page()
+            elif "{}data.gif".format(VERSION_PREFIX) == request_uri:
+                contype, body = data_gif()
             elif "{}graph_stats.json".format(VERSION_PREFIX) == request_uri:
                 contype, body = json_graph_stats()
             elif "{}bonus_address".format(VERSION_PREFIX) == request_uri:

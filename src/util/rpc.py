@@ -2,7 +2,7 @@ import json
 import requests
 from operator import itemgetter
 
-def monerod_get_block(rpc_port, block_height):
+def monerod_get_block(rpc_port, block_height, site="localhost"):
     # {"jsonrpc":"2.0","id":"0","method":"get_block", 
     # "params": { "height": '$i' }}
     data = {
@@ -11,12 +11,12 @@ def monerod_get_block(rpc_port, block_height):
         "method":"get_block",
         "params": {"height": block_height}
     }
-    r = requests.post("http://localhost:{}/json_rpc".format(rpc_port), data=json.dumps(data))
+    r = requests.post("http://{}:{}/json_rpc".format(site, rpc_port), data=json.dumps(data))
     r.raise_for_status()
     return r.json()['result']
 
-def monerod_get_height(rpc_port):
-    r = requests.get("http://localhost:{}/get_info".format(rpc_port))
+def monerod_get_height(rpc_port, site="localhost"):
+    r = requests.get("http://{}:{}/get_info".format(site, rpc_port))
     r.raise_for_status()
     return r.json()['height']
 
@@ -29,7 +29,7 @@ def moneropool_get_stats(site_ip, wa=None):
     r.raise_for_status()
     return r.json()
 
-def wallet_get_transfers_out(rpc_port):
+def wallet_get_transfers_out(rpc_port, site="localhost"):
     data = {
         "jsonrpc":"2.0",
         "id":"0",
@@ -42,7 +42,10 @@ def wallet_get_transfers_out(rpc_port):
             "pool": False
         }
     }
-    r = requests.get("http://localhost:{}/json_rpc".format(rpc_port), data=json.dumps(data))
+    r = requests.get("http://{}:{}/json_rpc".format(site, rpc_port), data=json.dumps(data))
     r.raise_for_status()
-    out_dict = sorted(r.json()['result']['out'], key=itemgetter('timestamp'), reverse=True)
-    return out_dict
+    out_dict = {}
+    if "result" in r.json().keys():
+        if "out" in r.json()['result'].keys():
+            out_dict = sorted(r.json()['result']['out'], key=itemgetter('timestamp'), reverse=True)
+    return out_dict[:30]

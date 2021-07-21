@@ -85,7 +85,6 @@ def address_from_key(key):
     return key.decode('utf-8').rstrip('\0')
 
 def get_balance(path, waddress=None):
-    j = c_longlong.from_param(9999)
     response = []
     env = lmdb.open(path, readonly=True, max_dbs=1, create=False)
     balance = env.open_db('balance'.encode())
@@ -132,6 +131,7 @@ def get_payments(path, waddress=None):
                             "dt": dt })
     env.close()
     response.reverse()
+    response = response[:30]
     return response
 
 def get_mined(path):

@@ -27,6 +27,7 @@ def parse_config(config_file):
             'pool_logo', # pool logo file
             'block_records', # path to dir of stat files before block hits
             'monerod_rpc_port', # monerod rpc port
+            'monerod_ip', #monerod ip
             'monero_wallet_rpc_port'
         ]
         for key in config_keys:

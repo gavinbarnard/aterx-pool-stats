@@ -185,6 +185,7 @@
 	<small>No-fee crypto trading for Canadians. <a target="_blank" class="alight" href="https://web.newton.co/r/LFOZ4W">Newton </a></small></br>
 	<small>Want a cloud hosting provider cheaper than AWS/Azure/GCP try <a target="_blank" class="alight" href="https://m.do.co/c/00c5ff3f406e">Digital Ocean</a> you start with a $100/60day credit.</small></br>
 	<small><a href='https://hiveos.farm?ref=612568' class="alight">HiveOS Managed Mining Platform</a><br/></small>
+	<small><a href='https://www.miningrigrentals.com/register?ref=2634505' class="alight">Mining Rig Rentals</a> - Rent Hash Power!</br></small>
 	<small>Using any of the above referral links helps keep the pool operational<br/></small>
 	<small>By using this site you accept two cookies, one to track your wallet(wa), and one to track dark mode(dark_mode)</small>
 <script>
@@ -196,7 +197,7 @@ var xmlhttp_multi = new XMLHttpRequest();
 var xmlhttp_pplns = new XMLHttpRequest();
 var xmlhttp_bonus = new XMLHttpRequest();
 var graph = document.getElementById("shittygraph");
-var connected_rigs = document.getElementById("rig_list");
+
 var graph_data;
 var rig_list;
 var dark_mode = 0;
@@ -246,13 +247,25 @@ xmlhttp_rig.onreadystatechange = function()
 {
 	if (this.readyState == 4 && this.status == 200)
 	{
+		var connected_rigs = document.getElementById("rig_list");
 		rig_list = JSON.parse(this.responseText);
+		connected_rigs.innerHTML = ""
 		for(i = 0; i < rig_list.length; i++)
 		{
-			rig_list[i] = rig_list[i].replace("<", "&lt;")
-			rig_list[i] = rig_list[i].replace(">", "&gt;")
+			if (isNaN(rig_list[i]))
+			{
+				rig_list[i] = rig_list[i].replace("<", "&lt;")
+				rig_list[i] = rig_list[i].replace(">", "&gt;")
+			} else 
+			{
+				rig_hash = format_hashes(rig_list[i])
+				rig_list[i] = rig_hash
+			}
 		}
-		connected_rigs.innerHTML = rig_list;
+		for(i = 0; i < rig_list.length; i=i+2)
+		{
+			connected_rigs.innerHTML = connected_rigs.innerHTML + rig_list[i] + ":&nbsp;" + rig_list[i+1] + "</br>"
+		}
 	}
 }
 xmlhttp_block.onreadystatechange = function()

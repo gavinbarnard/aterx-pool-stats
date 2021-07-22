@@ -169,18 +169,21 @@ def json_blocks_all_really_response():
     effort_data = {}
     final_blocks = []
     pool_blocks = get_mined(pooldd)
-    block_records = glob("{}/*.json".format(config_items['block_records']))
+    block_records = glob("{}/*".format(config_items['block_records']))
     net_height = monerod_get_height(config_items['monerod_rpc_port'], config_items['monerod_ip'])
     for block in block_records:
         with open(block, 'r') as fh:
             block_d = fh.read()
         b = json.loads(block_d)
-        effort_data[b['network_height']] = b
+        effort_data[b['height']] = b
     for block in pool_blocks:
         real_block = monerod_get_block(config_items['monerod_rpc_port'], block['height'], config_items['monerod_ip'])
-        if block['height']-1 in effort_data.keys():
-            effort = effort_data[block['height']-1]['round_hashes']/effort_data[block['height']-1]['network_hashrate']
-            effort = round(effort, 2)
+        if block['height'] in effort_data.keys():
+            if effort_data[block['height']]['round_hashes'] != 0:
+                effort = effort_data[block['height']]['round_hashes']/effort_data[block['height']]['network_hashrate']
+                effort = round(effort, 2)
+            else:
+                effort = 0
         else:
             effort = 0
         bb = {}
@@ -207,18 +210,21 @@ def json_blocks_all_response():
     effort_data = {}
     final_blocks = []
     pool_blocks = get_mined(pooldd)
-    block_records = glob("{}/*.json".format(config_items['block_records']))
+    block_records = glob("{}/*".format(config_items['block_records']))
     net_height = monerod_get_height(config_items['monerod_rpc_port'], config_items['monerod_ip'])
     for block in block_records:
         with open(block, 'r') as fh:
             block_d = fh.read()
         b = json.loads(block_d)
-        effort_data[b['network_height']] = b
+        effort_data[b['height']] = b
     for block in pool_blocks:
         real_block = monerod_get_block(config_items['monerod_rpc_port'], block['height'], config_items['monerod_ip'])
-        if block['height']-1 in effort_data.keys():
-            effort = effort_data[block['height']-1]['round_hashes']/effort_data[block['height']-1]['network_hashrate']
-            effort = round(effort, 2)
+        if block['height'] in effort_data.keys():
+            if effort_data[block['height']]['round_hashes'] != 0:
+                effort = effort_data[block['height']]['round_hashes']/effort_data[block['height']]['network_hashrate']
+                effort = round(effort, 2)
+            else:
+                effort = 0
         else:
             effort = 0
         bb = {}
@@ -247,17 +253,20 @@ def json_blocks_response():
     final_blocks = []
     net_height = monerod_get_height(config_items['monerod_rpc_port'], config_items['monerod_ip'])
     pool_blocks = get_mined(pooldd)
-    block_records = glob("{}/*.json".format(config_items['block_records']))
+    block_records = glob("{}/*".format(config_items['block_records']))
     for block in block_records:
         with open(block, 'r') as fh:
             block_d = fh.read()
         b = json.loads(block_d)
-        effort_data[b['network_height']] = b
+        effort_data[b['height']] = b
     for block in pool_blocks:
         real_block = monerod_get_block(config_items['monerod_rpc_port'], block['height'], config_items['monerod_ip'])
-        if block['height']-1 in effort_data.keys():
-            effort = effort_data[block['height']-1]['round_hashes']/effort_data[block['height']-1]['network_hashrate']
-            effort = round(effort, 2)
+        if block['height'] in effort_data.keys():
+            if effort_data[block['height']]['round_hashes'] != 0:
+                effort = effort_data[block['height']]['round_hashes']/effort_data[block['height']]['network_hashrate']
+                effort = round(effort, 2)
+            else:
+                effort = 0
         else:
             effort = 0
         if block['status'] == "LOCKED":

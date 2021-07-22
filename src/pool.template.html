@@ -250,7 +250,8 @@ xmlhttp_rig.onreadystatechange = function()
 		var connected_rigs = document.getElementById("rig_list");
 		rig_list = JSON.parse(this.responseText);
 		connected_rigs.innerHTML = ""
-		for(i = 0; i < rig_list.length; i++)
+		connected_rings.innerHTML = rig_list
+		/* for(i = 0; i < rig_list.length; i++)
 		{
 			if (isNaN(rig_list[i]))
 			{
@@ -265,7 +266,7 @@ xmlhttp_rig.onreadystatechange = function()
 		for(i = 0; i < rig_list.length; i=i+2)
 		{
 			connected_rigs.innerHTML = connected_rigs.innerHTML + rig_list[i] + ":&nbsp;" + rig_list[i+1] + "</br>"
-		}
+		} */
 	}
 }
 xmlhttp_block.onreadystatechange = function()

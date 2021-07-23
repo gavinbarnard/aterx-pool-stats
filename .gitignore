@@ -1,3 +1,7 @@
 .vscode/settings.json
 *.pyc
 monero-wallet-cli.log
+tools/local/.env*
+tools/local/testenv/*
+test/integ/__pycache__/
+test/integ/.pytest_cache

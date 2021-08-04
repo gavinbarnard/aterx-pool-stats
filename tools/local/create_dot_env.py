@@ -4,6 +4,8 @@ from os.path import exists
 
 def read_config():
     config_items = [
+        "git_repo",
+        "test_path",
         "monerod_ip",
         "monerod_rpc_port",
         "wallet_rpc_ip",

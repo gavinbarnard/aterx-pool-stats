@@ -7,6 +7,8 @@ from testlib.util import load_env, get_env_file
 def test_env():
     env_dict = load_env(get_env_file())
     config_items = [
+        "git_repo",
+        "test_path",
         "monerod_ip",
         "monerod_rpc_port",
         "wallet_rpc_ip",
@@ -35,6 +37,8 @@ def test_env():
         'wallet_rpc_ip',
     ]
     str_list = [
+        'git_repo',
+        'test_path',
         'test_pool_wallet_address',
         'test_pool_fee_wallet_address'
     ]
@@ -47,11 +51,6 @@ def test_env():
             assert True
     for key in str_list:
         assert isinstance(env_dict[key], str)
-    path_split = env_dict['test_build_dir'].split("/")
-    second = ''
-    test_path = ''
-    for i in range(0,len(path_split)-1):
-        test_path = test_path + second + path_split[i]
-        second = '/'
+    test_path = env_dict['test_path']
     assert exists(test_path)
     

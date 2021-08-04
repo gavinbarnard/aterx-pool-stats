@@ -33,7 +33,7 @@ fi
 if [ -z "$2" ]; then
     build_type="debug"
 fi
-git_root=`git rev-parse --show-toplevel`
+git_root=$git_repo
 if [ -d $test_build_dir ]; then
     echo testbuild directory exists, cleaning, and creating
     rm -rf $test_build_dir
@@ -95,6 +95,7 @@ echo pid-file = $test_build_dir/test_pool.pid >> $test_build_dir/pool.conf
 echo forked = 1 >> $test_build_dir/pool.conf
 echo processes = 1 >> $test_build_dir/pool.conf
 echo cull-shares = 10 >> $test_build_dir/pool.conf
+echo disable-payouts = 1 >> $test_build_dir/pool.conf
 
 echo "creating monero-wallet-rpc config file"
 

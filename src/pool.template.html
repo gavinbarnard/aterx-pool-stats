@@ -440,11 +440,7 @@ function updateGraph(graph_data)
 	poolavg = document.getElementById("poolavg");
 	poolavg.innerHTML = format_hashrate(pavg);
 	blockfind = document.getElementById("blockfind");
-	b_chance = pavg / graph_data[graph_data.length-1]['nr'] * 30 * 24 * 100
-	if (b_chance>2)
-	{
-		b_chance--;
-	}
+	b_chance = pavg / graph_data[graph_data.length-1]['nr'] * 100
 	b_chance = b_chance.toFixed(2);
 	blockfind.innerHTML = "At the pool average hashrate we have an " + b_chance + "% chance to find a block per day <small>i can't maff one day it will be right</small></br>";
 	if (pplns != 0)

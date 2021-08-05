@@ -3,7 +3,6 @@ from time import time, sleep
 from os.path import exists
 from random import choice
 
-from requests.api import get
 from util.moneropooldb import get_balance
 from util.rpc import moneropool_get_stats
 from util.config import parse_config, cli_options
@@ -89,7 +88,10 @@ def get_highest_win_count():
     return highest_wins
 
 def reduce_draw_pool():
+    last_winner = get_latest_winner()
     miner_pool = get_miner_pool()
+    if last_winner in miner_pool:
+        miner_pool.remove(last_winner)
     return miner_pool
 
 

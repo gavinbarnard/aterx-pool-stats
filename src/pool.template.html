@@ -177,7 +177,7 @@
      ]
 	</pre>
 	</li>
-        <li>If you don't specify a d=value you will start at 1000 and be auto adjusted up.</li>
+        <li>If you don't specify a d=value you will start at 5000 and be auto adjusted up.</li>
 	<li>Recommended starting d=value is 20 * hashrate</li>
 	</ul>
 	</div>
@@ -185,7 +185,7 @@
 	<small>No-fee crypto trading for Canadians. <a target="_blank" class="alight" href="https://web.newton.co/r/LFOZ4W">Newton </a></small></br>
 	<small>Want a cloud hosting provider cheaper than AWS/Azure/GCP try <a target="_blank" class="alight" href="https://m.do.co/c/00c5ff3f406e">Digital Ocean</a> you start with a $100/60day credit.</small></br>
 	<small><a href='https://hiveos.farm?ref=612568' class="alight">HiveOS Managed Mining Platform</a><br/></small>
-	<small><a href='https://www.miningrigrentals.com/register?ref=2634505' class="alight">Mining Rig Rentals</a> - Rent Hash Power!</br></small>
+	<small><a href='https://www.miningrigrentals.com/register?ref=2634505' class="alight">Mining Rig Rentals</a> - Rent Hash Power!</br> - Join the discord to be provided non ssl port info / get wallet whitelisted access to use MRR</small>
 	<small>Using any of the above referral links helps keep the pool operational<br/></small>
 	<small>By using this site you accept two cookies, one to track your wallet(wa), and one to track dark mode(dark_mode)</small>
 <script>
@@ -251,6 +251,7 @@ xmlhttp_rig.onreadystatechange = function()
 		rig_list = JSON.parse(this.responseText);
 		connected_rigs.innerHTML = ""
 		connected_rigs.innerHTML = rig_list
+		// uncomment when pool gets updated
 		/* for(i = 0; i < rig_list.length; i++)
 		{
 			if (isNaN(rig_list[i]))
@@ -439,7 +440,7 @@ function updateGraph(graph_data)
 	poolavg = document.getElementById("poolavg");
 	poolavg.innerHTML = format_hashrate(pavg);
 	blockfind = document.getElementById("blockfind");
-	b_chance = pavg / graph_data[graph_data.length-1]['nr'] * 30 * 24 * 30
+	b_chance = pavg / graph_data[graph_data.length-1]['nd'] * 30 * 24 * 30
 	if (b_chance>2)
 	{
 		b_chance--;

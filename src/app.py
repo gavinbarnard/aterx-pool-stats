@@ -322,6 +322,7 @@ def read_files(files):
         response[ts] = {}
         response[ts]['pr'] = temp['pool_hashrate']
         response[ts]['nr'] = temp['network_hashrate']
+        response[ts]['nd'] = temp['network_difficulty']
     return response
 
 def application(environ, start_response):

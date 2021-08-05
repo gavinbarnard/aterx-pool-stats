@@ -134,6 +134,7 @@ def json_graph_stats():
                   'pr':  stat_data[my_item]['pr'],
                   'nrp': stat_data[my_item]['nrp'],
                   'prp': stat_data[my_item]['prp'],
+                  'nd': stat_data[my_item]['nd'],
                   'pavg': p_avg_d,
                   'ts': my_item
                   })

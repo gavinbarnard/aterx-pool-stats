@@ -181,7 +181,7 @@ def json_blocks_all_really_response():
         real_block = monerod_get_block(config_items['monerod_rpc_port'], block['height'], config_items['monerod_ip'])
         if block['height'] in effort_data.keys():
             if effort_data[block['height']]['round_hashes'] != 0:
-                effort = effort_data[block['height']]['round_hashes']/effort_data[block['height']]['network_difficulty']
+                effort = effort_data[block['height']]['round_hashes']/effort_data[block['height']]['network_difficulty'] * 100
                 effort = round(effort, 2)
             else:
                 effort = 0
@@ -222,7 +222,7 @@ def json_blocks_all_response():
         real_block = monerod_get_block(config_items['monerod_rpc_port'], block['height'], config_items['monerod_ip'])
         if block['height'] in effort_data.keys():
             if effort_data[block['height']]['round_hashes'] != 0:
-                effort = effort_data[block['height']]['round_hashes']/effort_data[block['height']]['network_difficulty']
+                effort = effort_data[block['height']]['round_hashes']/effort_data[block['height']]['network_difficulty'] * 100
                 effort = round(effort, 2)
             else:
                 effort = 0
@@ -264,7 +264,7 @@ def json_blocks_response():
         real_block = monerod_get_block(config_items['monerod_rpc_port'], block['height'], config_items['monerod_ip'])
         if block['height'] in effort_data.keys():
             if effort_data[block['height']]['round_hashes'] != 0:
-                effort = effort_data[block['height']]['round_hashes']/effort_data[block['height']]['network_difficulty']
+                effort = effort_data[block['height']]['round_hashes']/effort_data[block['height']]['network_difficulty'] * 100
                 effort = round(effort, 2)
             else:
                 effort = 0

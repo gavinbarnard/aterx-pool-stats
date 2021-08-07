@@ -373,6 +373,8 @@ def application(environ, start_response):
         usecache = True
     if "{}payments".format(VERSION_PREFIX) == request_uri:
         usecache = False
+    if "{}blockui.html".format(VERSION_PREFIX) == request_uri:
+        usecache = False
     contype = "text/plain"
     nothing = False
     

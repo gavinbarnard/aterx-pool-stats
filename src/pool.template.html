@@ -251,9 +251,9 @@ xmlhttp_rig.onreadystatechange = function()
 		var connected_rigs = document.getElementById("rig_list");
 		rig_list = JSON.parse(this.responseText);
 		connected_rigs.innerHTML = ""
-		connected_rigs.innerHTML = rig_list
+		//connected_rigs.innerHTML = rig_list
 		// uncomment when pool gets updated
-		/* for(i = 0; i < rig_list.length; i++)
+		for(i = 0; i < rig_list.length; i++)
 		{
 			if (isNaN(rig_list[i]))
 			{
@@ -268,7 +268,7 @@ xmlhttp_rig.onreadystatechange = function()
 		for(i = 0; i < rig_list.length; i=i+2)
 		{
 			connected_rigs.innerHTML = connected_rigs.innerHTML + rig_list[i] + ":&nbsp;" + rig_list[i+1] + "</br>"
-		} */
+		}
 	}
 }
 xmlhttp_block.onreadystatechange = function()
@@ -642,6 +642,8 @@ if (jar.dark_mode && (jar.dark_mode == 0 || jar.dark_mode == 1))
 		xmlhttp.send(null);
 		xmlhttp_block.open("GET", "/0/blocks.all", true);
 		xmlhttp_block.send();
+		xmlhttp_rig.open("GET","/workers", true);
+		xmlhttp_rig.send();
 		ptype = document.getElementById("payout_type");
 		if (ptype.innerHTML == "pool")
 		{

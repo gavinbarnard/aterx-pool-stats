@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import time
 from os.path import exists
 
 from util.config import parse_config, cli_options
@@ -22,19 +23,30 @@ def log_scrape_mined_lines():
 def extract_effort_data():
     block_records_path = config_items['block_records']
     mined_lines = log_scrape_mined_lines()
+    p="%Y-%m-%d %H:%M:%S"
     for line in mined_lines:
         explosion = line.split(" ")
+        ymd=explosion[0].strip()
+        hms=explosion[1].strip()
+        s="{} {}".format(ymd, hms)
+        dt = int(time.mktime(time.strptime(s, p)))
         miner = explosion[10].strip()
+        miner = miner[miner.index("=")+1:-1]
         roundhr = explosion[11].strip()
-        nethr = explosion[13].strip()
-        height = int(explosion[14].strip())+1
+        roundhr = roundhr[roundhr.index("=")+1:-1]
+        diff = explosion[12].strip()
+        diff = diff[diff.index("=")+1:-1]
+        height = explosion[13].strip()
+        height = int(height[height.index("=")+1:])+1
         test_file_name = "{}/{}".format(block_records_path, height)
         if not exists(test_file_name):
             block = {
                 "miner": miner,
                 "round_hashes": int(roundhr),
-                "network_hashrate": int(nethr),
-                "height": height
+                "network_difficulty": int(diff),
+                "network_hashrate": 0,
+                "height": height,
+                "dt": int(dt)
             }
             print("Found new block in log {}".format(height))
             fh = open(test_file_name, 'w')

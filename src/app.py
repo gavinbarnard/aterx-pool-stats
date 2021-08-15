@@ -200,7 +200,7 @@ def json_blocks_all_really_response():
         if block['hash'].encode('utf-8') == real_block['block_header']['hash'].encode('utf-8'):
             bb['hash_match'] = True
         bb['unlock_height'] = json_inside_json['miner_tx']['unlock_time']
-        bb['blocks_to_unlock'] = bb['unlock_height'] - net_height
+        bb['blocks_to_unlock'] = bb['unlock_height'] - net_height + 1
         if bb['blocks_to_unlock'] < 0:
             bb['blocks_to_unlock'] = 0
         final_blocks.append(bb)
@@ -241,7 +241,7 @@ def json_blocks_all_response():
         if block['hash'].encode('utf-8') == real_block['block_header']['hash'].encode('utf-8'):
             bb['hash_match'] = True
         bb['unlock_height'] = json_inside_json['miner_tx']['unlock_time']
-        bb['blocks_to_unlock'] = bb['unlock_height'] - net_height
+        bb['blocks_to_unlock'] = bb['unlock_height'] - net_height + 1
         if bb['blocks_to_unlock'] < 0:
             bb['blocks_to_unlock'] = 0
         final_blocks.append(bb)

@@ -328,7 +328,7 @@ function updateBlocks(block_data)
 	for (i = 0; i < block_data.length; i++)
 	{
 		maxeff = maxeff + block_data[i]['effort'];
-		if (block_data[i]['hash_match'] == False) {
+		if (block_data[i]['hash_match'] == false) {
 			block_data[i]['reward'] = 0;
 		}
 		if (block_data[i]['status'] == "ORPHANED") {

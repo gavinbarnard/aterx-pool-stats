@@ -327,13 +327,15 @@ function updateBlocks(block_data)
 	uncounted_blocks = 0;
 	for (i = 0; i < block_data.length; i++)
 	{
-		if (block_data[i]['status'] != "ORPHANED") {
-			maxeff = maxeff + block_data[i]['effort'];
-		} else {
+		maxeff = maxeff + block_data[i]['effort'];
+		if (block_data[i]['hash_match'] == False) {
+			block_data[i]['reward'] = 0;
+		}
+		if (block_data[i]['status'] == "ORPHANED") {
 			uncounted_blocks = uncounted_blocks + 1;
 		}
 		d = new Date(block_data[i]['timestamp']*1000);
-		if (block_data[i]['timestamp']*1000 >= thirty_days_ago)
+		if (block_data[i]['timestamp']*1000 >= thirty_days_ago && block_data[i]['status'] != "ORPHANED")
 		{
 			found_within_thirty = found_within_thirty + 1;
 		}

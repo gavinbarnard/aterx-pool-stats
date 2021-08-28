@@ -17,7 +17,8 @@ def read_config():
         "test_pool_webui_port",
         "test_pool_wallet_address",
         "test_pool_fee_wallet_address",
-        "test_build_dir"
+        "test_build_dir",
+        "ln_data_dir"
     ]
 
     config_answers = {}

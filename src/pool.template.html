@@ -251,24 +251,28 @@ xmlhttp_rig.onreadystatechange = function()
 	{
 		var connected_rigs = document.getElementById("rig_list");
 		rig_list = JSON.parse(this.responseText);
-		connected_rigs.innerHTML = ""
+		connected_rigs.innerHTML = "";
 		//connected_rigs.innerHTML = rig_list
 		// uncomment when pool gets updated
 		for(i = 0; i < rig_list.length; i++)
 		{
+			if (rig_list[i] == "")
+			{
+				rig_list[i] = "unknown miner";
+			}
 			if (isNaN(rig_list[i]))
 			{
-				rig_list[i] = rig_list[i].replace("<", "&lt;")
-				rig_list[i] = rig_list[i].replace(">", "&gt;")
+				rig_list[i] = rig_list[i].replace("<", "&lt;");
+				rig_list[i] = rig_list[i].replace(">", "&gt;");
 			} else 
 			{
-				rig_hash = format_hashes(rig_list[i])
-				rig_list[i] = rig_hash
+				rig_hash = format_hashes(rig_list[i]);
+				rig_list[i] = rig_hash;
 			}
 		}
 		for(i = 0; i < rig_list.length; i=i+2)
 		{
-			connected_rigs.innerHTML = connected_rigs.innerHTML + rig_list[i] + ":&nbsp;" + rig_list[i+1] + "</br>"
+			connected_rigs.innerHTML = connected_rigs.innerHTML + rig_list[i] + ":&nbsp;" + rig_list[i+1] + "</br>";
 		}
 	}
 }

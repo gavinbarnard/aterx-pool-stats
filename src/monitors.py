@@ -29,3 +29,5 @@ def main():
                 local_stats['network_height'], local_monerod_height
             ))
 
+if __name__ == "__main__":
+    main()

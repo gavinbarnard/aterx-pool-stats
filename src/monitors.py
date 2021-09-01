@@ -21,9 +21,14 @@ def main():
 
     for site in external_stats.keys():
         if local_stats['network_height'] != external_stats[site]['network_height']:
-            print("Mismatch between {}:{} and local:{}".format(
-                site, external_stats[site]['network_height'], local_stats['network_height']
-            ))
+            if local_stats['network_height'] < external_stats[site]['network_height']:
+                print("Mismatch we're behind {}:{} and local:{}".format(
+                    site, external_stats[site]['network_height'], local_stats['network_height']
+                ))
+            if local_stats['network_height'] > external_stats[site]['network_height']:
+                print("mismatch but We're ahead of {}:{} and local:{}".format(
+                    site, external_stats[site]['network_height'], local_stats['network_height']
+                ))
         if local_stats['network_height'] != local_monerod_height - 1:
             print("Mismatch between pool height {} and monerod height {}".format(
                 local_stats['network_height'], local_monerod_height

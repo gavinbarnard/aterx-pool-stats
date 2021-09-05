@@ -346,7 +346,6 @@ def application(environ, start_response):
         splitter = request_uri.split("?")
         request_uri = splitter[0]
         parameters = splitter[1]
-        print(parameters)
     if parameters:
         final_p = {}
         para_kv = parameters.split("&")
@@ -411,7 +410,7 @@ def application(environ, start_response):
                 payout_est = 0
                 if wa:
                     payout_json = memcache_client.get("reward_{}".format(wa))
-                    if payout_est:
+                    if payout_json:
                         payout_json = json.loads(payout_json)
                         payout_est = payout_json['reward'] / 1e12
                     else:

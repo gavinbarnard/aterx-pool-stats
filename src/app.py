@@ -410,9 +410,10 @@ def application(environ, start_response):
             elif "{}payout_est".format(VERSION_PREFIX) == request_uri:
                 payout_est = 0
                 if wa:
-                    payout_est = int(memcache_client.get("reward_{}".format(wa)))
+                    payout_json = memcache_client.get("reward_{}".format(wa))
                     if payout_est:
-                        payout_est = payout_est / 1e12
+                        payout_json = json.loads(payout_json)
+                        payout_est = payout_json['reward'] / 1e12
                     else:
                         payout_est = 0
                 else:

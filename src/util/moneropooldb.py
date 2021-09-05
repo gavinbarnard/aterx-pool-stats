@@ -134,7 +134,7 @@ def get_payments(path, waddress=None):
     response = response[:30]
     return response
 
-def get_mined(path):
+def get_mined(path, reverse=False):
     response = []
     env = lmdb.open(path, readonly=True, max_dbs=1, create=False)
     blocks = env.open_db('blocks'.encode())
@@ -157,6 +157,8 @@ def get_mined(path):
                     "dt": dt}
                 )
     env.close()
+    if reverse:
+        response.reverse()
     return response
 
 def get_shares(path):
@@ -184,7 +186,7 @@ def get_shares(path):
 
 def get_pplns_window_estimate(path, with_rewards=False):
     # this chews i/os run sparringly
-    blocks = get_mined(path)
+    blocks = get_mined(path, True)
     block = None
     for ublock in blocks:
         if ublock['status'] == "UNLOCKED":

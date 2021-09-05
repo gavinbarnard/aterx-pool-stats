@@ -31,5 +31,5 @@ memcache_client.set("{}_last".format(request_uri), json.dumps([datetime.now().ti
 memcache_client.set("{}_contype".format(request_uri), json.dumps([contype]))
 memcache_client.set("{}_body".format(request_uri), json.dumps([body]))
 for rewardkey in rewards.keys():
-    r = json.dumps({"reward": rewards[rewardkey]})
+    r = json.dumps({"reward": rewards[rewardkey]}, indent=True)
     memcache_client.set("reward_{}".format(rewardkey), r)

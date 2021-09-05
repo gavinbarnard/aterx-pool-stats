@@ -198,7 +198,7 @@ def get_pplns_window_estimate(path, with_rewards=False):
     # use 95% of the previous block reward to 'guess'
     block['reward'] = floor(.95 * block['reward'])
     rewards = {}
-    dt = 0 
+    dt = 0
     with env.begin(db=shares) as txn:
         with txn.cursor() as curs:
             if curs.last():
@@ -216,7 +216,7 @@ def get_pplns_window_estimate(path, with_rewards=False):
                     pay_amount = floor(share.difficulty / (block['difficulty'] * 2) * block['reward'])
                     if (pay_amount + total_pay > block['reward']):
                         pay_amount = block['reward'] - total_pay
-                    if share.address in rewards.keys():
+                    if str(share.address, "utf-8") in rewards.keys():
                         rewards[str(share.address, "utf-8")] += pay_amount
                     else:
                         rewards[str(share.address, "utf-8")] = pay_amount

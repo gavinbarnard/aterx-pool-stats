@@ -371,9 +371,11 @@ def application(environ, start_response):
         usecache = True
     if "{}pplns_est".format(VERSION_PREFIX) == request_uri:
         usecache = True
-    if "{}payments".format(VERSION_PREFIX) == request_uri:
+    elif "{}payments".format(VERSION_PREFIX) == request_uri:
         usecache = False
-    if "{}blockui.html".format(VERSION_PREFIX) == request_uri:
+    elif "{}blockui.html".format(VERSION_PREFIX) == request_uri:
+        usecache = False
+    elif "{}payout_est".format(VERSION_PREFIX) == request_uri:
         usecache = False
     contype = "text/plain"
     nothing = False
@@ -405,6 +407,17 @@ def application(environ, start_response):
                 contype, body = json_payments_summary()
             elif "{}multi".format(VERSION_PREFIX) == request_uri:
                 contype, body = json_get_multi()
+            elif "{}payout_est".format(VERSION_PREFIX) == request_uri:
+                payout_est = 0
+                if wa:
+                    payout_est = int(memcache_client.get("reward_{}".format(wa)))
+                    if payout_est:
+                        payout_est = payout_est / 1e12
+                    else:
+                        payout_est = 0
+                else:
+                    payout_est = 0
+                contype, body = json_generic_response({"payout_est": payout_est})
             elif "{}pool.html".format(VERSION_PREFIX) == request_uri:
                 contype, body = pool_page()
             elif "{}blockui.html".format(VERSION_PREFIX) == request_uri:
@@ -426,7 +439,7 @@ def application(environ, start_response):
         else:
             nothing = True
             body = "This should not be served"
-        if not nothing and "{}payments".format(VERSION_PREFIX) != request_uri:
+        if not nothing and "{}payments".format(VERSION_PREFIX) != request_uri and "{}blockui.thml".format(VERSION_PREFIX) and "{}payout_est".format(VERSION_PREFIX):
             memcache_client.set("{}_last".format(request_uri), json.dumps([datetime.now().timestamp()]))
             memcache_client.set("{}_contype".format(request_uri), json.dumps([contype]))
             memcache_client.set("{}_body".format(request_uri), json.dumps([body]))

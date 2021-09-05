@@ -182,7 +182,7 @@ def get_shares(path):
     env.close()
     return response
 
-def get_pplns_window_estimate(path):
+def get_pplns_window_estimate(path, with_rewards=False):
     # this chews i/os run sparringly
     blocks = get_mined(path)
     block = None
@@ -197,20 +197,44 @@ def get_pplns_window_estimate(path):
     total_pay = 0
     # use 95% of the previous block reward to 'guess'
     block['reward'] = floor(.95 * block['reward'])
+    rewards = {}
+    dt = 0 
     with env.begin(db=shares) as txn:
         with txn.cursor() as curs:
-            curs.last()
-            while(1):
-                key, value = curs.item()
-                share = share_t.from_buffer_copy(value)
-                dt = share.timestamp
-                pay_amount = floor(share.difficulty / (block['difficulty'] * 2) * block['reward'])
-                if (pay_amount + total_pay > block['reward']):
-                    pay_amount = block['reward'] - total_pay
-                total_pay += pay_amount
-                if total_pay == block['reward']:
-                    return dt
-                if not curs.prev():
+            if curs.last():
+                while(1):
+                    key, value = curs.item()
+                    try:
+                        share = share_t.from_buffer_copy(value)
+                    except ValueError:
+                        print("there was an error {} {}".format(dt, rewards))
+                        if with_rewards:
+                            return dt, rewards
+                        else:
+                            return dt
+                    dt = share.timestamp
+                    pay_amount = floor(share.difficulty / (block['difficulty'] * 2) * block['reward'])
+                    if (pay_amount + total_pay > block['reward']):
+                        pay_amount = block['reward'] - total_pay
+                    if share.address in rewards.keys():
+                        rewards[str(share.address, "utf-8")] += pay_amount
+                    else:
+                        rewards[str(share.address, "utf-8")] = pay_amount
+                    total_pay += pay_amount
+                    if total_pay == block['reward']:
+                        if with_rewards:
+                            return dt, rewards
+                        else:
+                            return dt
+                    if not curs.prev():
+                        if with_rewards:
+                            return dt, rewards
+                        else:
+                            return dt
+            else:
+                if with_rewards:
+                    return dt, rewards
+                else:
                     return dt
 
 if __name__ == '__main__':

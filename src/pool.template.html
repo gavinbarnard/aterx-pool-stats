@@ -94,6 +94,7 @@
             <tr><td>Miners connected: </td><td id="connected_miners"></td></tr>
             <tr class="miner"><td>Your HR: </td><td id="miner_hashrate"></td></tr>
             <tr class="miner"><td>Balance due: </td><td id="miner_balance"></td></tr>
+			<tr class="miner"><td><a class="alight" href="#potmine">Potential mining value</a>:</td><td id="payout_est"></td></tr>
 	    <tr class="miner"><td>Worker Count: </td><td id="worker_count"></td></tr>
 	    <tr class="miner"><td>Payout info: </td><td id="payout_type" onClick="togglePayout()">pool</td></tr>
 	    <tr><td>Miner address: </td><td id="address" contenteditable="true"></td></tr>
@@ -143,6 +144,8 @@
 		<a target="_blank" class="alight" href="https://discord.gg/kTH5a93CMQ">Please join the pool discord</a></br>
 		Please report any issues in the discord</br>
 		<font color=red>!! Weekly maintenance and server restarts will begin every Sunday@11pm ET(UTC -5:00 / -4:00) - !!</font></header></br>
+	</br>
+		<div id="potmine">Potential mining value: This is an estimate with 95% of the last blocks payout used to best guess your share of the reward if a block hit happened right now.  This is by no means a guarantee or a promise of earnings. For maximum potential value mine 24/7.  If you are a new miner this value will take up to length of the current PPLNS window to reach maximum value</div></br>
 	</div>
 	<div id="howto">
 	<h4>Get a monero wallet</h4>
@@ -198,11 +201,21 @@ var xmlhttp_payments = new XMLHttpRequest();
 var xmlhttp_multi = new XMLHttpRequest();
 var xmlhttp_pplns = new XMLHttpRequest();
 var xmlhttp_bonus = new XMLHttpRequest();
+var xmlhttp_payout = new XMLHttpRequest();
 var graph = document.getElementById("shittygraph");
 
 var graph_data;
 var rig_list;
 var dark_mode = 0;
+xmlhttp_payout.onreadystatechange = function()
+{
+	if (this.readyState == 4 && this.status == 200)
+	{
+		payout_est = document.getElementById("payout_est");
+		payout_json = JSON.parse(this.responseText);
+		payout_est.innerHTML = payout_json['payout_est'];
+	}
+}
 xmlhttp_bonus.onreadystatechange = function()
 {
 	if (this.readyState == 4 && this.status == 200)
@@ -296,6 +309,8 @@ xmlhttp_multi.open("GET","/0/multi", true);
 xmlhttp_multi.send();
 xmlhttp_bonus.open("GET","/0/bonus_address", true);
 xmlhttp_bonus.send();
+xmlhttp_payout.open("GET","/0/payout_est", true);
+xmlhttp_payout.send();
 function updatePayments(payment_data)
 {
 	ptype = document.getElementById("payout_type");
@@ -649,6 +664,8 @@ if (jar.dark_mode && (jar.dark_mode == 0 || jar.dark_mode == 1))
 		xmlhttp_block.send();
 		xmlhttp_rig.open("GET","/workers", true);
 		xmlhttp_rig.send();
+		xmlhttp_payout.open("GET","/0/payout_est", true);
+		xmlhttp_payout.send();
 		ptype = document.getElementById("payout_type");
 		if (ptype.innerHTML == "pool")
 		{

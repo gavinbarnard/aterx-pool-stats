@@ -149,42 +149,43 @@
 		Please report any issues in the discord</br>
 	</div>
 	<div id="howto">
-	<h4>Get a monero wallet</h4>
+	<h4>Get started</h4>
 	<ul>
-	<li><a target="_blank" class="alight" href="https://getmonero.org">Start here to get a wallet software</a></li>
-	</ul>
-	<h4>Get XMRIG</h4>
-	<ul>
-	<li><a target="_blank" class="alight" href="https://github.com/xmrig/xmrig">Xmrig github</a> or git clone https://github.com/xmrig/xmrig</li>
-	<li>Follow the <a target="_blank" class="alight" href="https://xmrig.com/docs/miner/build">build instructions</a>, or download the <a target="_blank" class="alight" href="https://github.com/xmrig/xmrig/releases">Prebuilts</a> </li>
-	<li>Add to Windows Defender Exclusions -&gt; Virus &amp; Threat protection -&gt; Virus &amp; threat protection settings -&gt; Settings -&gt; Exclusions -&gt; add xmrig.exe as a process name, and the folder where you installed or built it., otherwise Windows Defender will delete it.</li>
-	<li>Run in an Administrative Command prompt, or with sudo</li>
-	<li>On initial launch it may say that it is enabled huge page but that a reboot is needed, it is highly recommended to reboot to get a better hashrate</li>
-	<li>Example CLI:</li>
-	<li>xmrig -o pool.aterx.com:4244 --tls --keepalive -u &lt;walletid&gt; -p d=20000 --algo rx/0 --rig-id &lt;CustomRigIdentifier&gt;</li>
-	<li>Example Pools section of config.json:</li>
-	<li><pre>
+		<li><a target="_blank" class="alight" href="https://www.getmonero.org/downloads/">Offical wallet software</a></li>
+		<li><a target="_blank" class="alight" href="https://xmrig.com/download">Download Xmrig</a> or <a target="_blank" class="alight" href="https://xmrig.com/docs/miner/build">build Xmrig from source</a></li>
+
+		<li>Add to Windows Defender</li>
+		<ol style="list-style-type: circle; padding-bottom: 0;">
+			<li style="margin-left:2em">Windows Defender -&gt; Exclusions -&gt; Virus &amp; Threat protection -&gt; Virus &amp; threat protection settings -&gt; Settings -&gt; Exclusions</li>
+			<li style="margin-left:2em; padding-bottom: 0;">Add xmrig.exe as a process name, and the folder where it is located otherwise Windows Defender will delete it.</li>
+		</ol>
+			
+		<li>Edit config file or run via comand line</li>
+		<li>Example Pools section of config.json:
+			<pre>
 "pools": [
-     {
-            "algo": "rx/0",
-            "coin": null,
-            "url": "pool.aterx.com:4244",
-            "user": "&lt;wallet&gt;",
-            "pass": "d=27881",
+    {
+		"algo": "rx/0",
+		"coin": null,
+		"url": "pool.aterx.com:4244",
+		"user": "&lt;wallet&gt;",
+		"pass": "d=27881",
 	    "rig-id": "&lt;custom-rig-id&gt;",
-            "keepalive": true,
-            "enabled": true,
-            "tls": true,
-            "tls-fingerprint": null,
-            "daemon": false,
-            "socks5": null,
-            "self-select": null
+		"keepalive": true,
+		"enabled": true,
+		"tls": true,
+		"tls-fingerprint": null,
+		"daemon": false,
+		"socks5": null,
+		"self-select": null
      }
-     ]
+]
 	</pre>
 	</li>
-        <li>If you don't specify a d=value you will start at 1000 and be auto adjusted up.</li>
-	<li>Recommended starting d=value is 20 * hashrate</li>
+		<li>Run Xmrig by right click Xmrig -&gt; Run as administrator or run Xmrig from the CLI <pre>xmrig -o pool.aterx.com:4244 --tls --keepalive -u &lt;walletid&gt; -p d=20000 --algo rx/0 --rig-id &lt;CustomRigIdentifier&gt;</pre></li>
+
+		<li>On initial launch it may say to enabled huge page but that a reboot is needed, it is highly recommended to reboot to get a better hashrate</li>
+		<li>Recommended starting d=value is 20 * hashrate (defualt is 1000 and be auto adjusted up).</li>
 	</ul>
 	</div>
 	<div>Next Certificate Renewal Sep 13/2021 8am - pool will be offline for a few moments while the certs are renewed</div></br>
@@ -194,6 +195,9 @@
 	<small><a href='https://www.miningrigrentals.com/register?ref=2634505' class="alight">Mining Rig Rentals</a> - Rent Hash Power!</br></small>
 	<small>Using any of the above referral links helps keep the pool operational<br/></small>
 	<small>By using this site you accept two cookies, one to track your wallet(wa), and one to track dark mode(dark_mode)</small>
+
+
+
 <script>
 var xmlhttp = new XMLHttpRequest();
 var xmlhttp_rig = new XMLHttpRequest();

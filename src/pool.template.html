@@ -95,6 +95,7 @@
 						<tr><td>Round hashes: </td><td id="round_hashes"></td></tr>
 						<tr><td>Payment threshold: </td><td id="payment_threshold"></td></tr>
 						<tr><td>Pool fee: </td><td id="pool_fee"></td></tr>
+						<tr><td>Pool Unencrypted port: </td><td id="unencrypted_port">4245</td></tr>
 						<tr><td>Pool SSL port: </td><td id="pool_ssl_port"></td></tr>
 						<tr><td>Allow self-select: </td><td id="allow_self_select"></td></tr>
 						<tr><td>Miners connected: </td><td id="connected_miners"></td></tr>
@@ -144,6 +145,7 @@
 			<a target="_blank" class="alight" href="https://discord.gg/kTH5a93CMQ">Please join the pool discord</a></br>
 			Please report any issues in the discord</br>
 		</div>
+		<div id="potmine">Potential mining value: This is an estimate with 95% of the last blocks payout used to best guess your share of the reward if a block hit happened right now.  This is by no means a guarantee or a promise of earnings. For maximum potential value mine 24/7.  If you are a new miner this value will take up to length of the current PPLNS window to reach maximum value</div>
 
 		<div id="howto">
 			<h4>Get started</h4>
@@ -177,6 +179,7 @@
 					]
 				</pre>
 				</li>
+				<li>Note: If the pools section is not the last item then there should be a , after the ] of the pool section</li>
 				<li>Run Xmrig by right click Xmrig -&gt; Run as administrator or run Xmrig from the CLI <pre>xmrig -o pool.aterx.com:4244 --tls --keepalive -u &lt;walletid&gt; -p d=20000 --algo rx/0 --rig-id &lt;CustomRigIdentifier&gt;</pre></li>
 
 				<li>On initial launch it may say to enabled huge page but that a reboot is needed, it is highly recommended to reboot to get a better hashrate</li>
@@ -184,7 +187,7 @@
 			</ul>
 		</div>
 
-		<div>Next Certificate Renewal Sep 13/2021 8am - pool will be offline for a few moments while the certs are renewed</div></br>
+		<div>SSL Certificates auto rotates every 90 days.</div></br>
 		<small>No-fee crypto trading for Canadians. <a target="_blank" class="alight" href="https://web.newton.co/r/LFOZ4W">Newton </a></small></br>
 		<small>Want a cloud hosting provider cheaper than AWS/Azure/GCP try <a target="_blank" class="alight" href="https://m.do.co/c/00c5ff3f406e">Digital Ocean</a> you start with a $100/60day credit.</small></br>
 		<small><a href='https://hiveos.farm?ref=612568' class="alight">HiveOS Managed Mining Platform</a><br/></small>

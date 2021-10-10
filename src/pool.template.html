@@ -458,8 +458,6 @@ function updateGraph(graph_data)
 		ctx.fillRect(n,graph_data[n]['prp'],1,1);
 		ctx.fillStyle = "#FF0000";
 		ctx.fillRect(n,graph_data[n]['nrp'],1,1);
-		console.log(graph_data[n]['ts']);
-		console.log(pplns);
 		if (graph_data[n]['ts'] > pplns)
 		{
 			ctx.fillStyle = "#009696";

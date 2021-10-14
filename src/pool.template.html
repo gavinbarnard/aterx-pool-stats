@@ -126,7 +126,7 @@
 	<div id="bonus_rig">
 	</div>
 	<div>
-		BonusRig1 (~48kh/s) rotates hourly between anyone with a pending balance, or a previous payout, with atleast one worker, and one hash per second.<br/>
+		BonusRig1 (~238kh/s) rotates hourly between anyone with a pending balance, or a previous payout, with atleast one worker, and one hash per second.<br/>
 	</div>
     <br/><br/>
 	<table><tr>
@@ -458,7 +458,7 @@ function updateGraph(graph_data)
 		ctx.fillRect(n,graph_data[n]['prp'],1,1);
 		ctx.fillStyle = "#FF0000";
 		ctx.fillRect(n,graph_data[n]['nrp'],1,1);
-		if (pplns > graph_data[n]['ts'])
+		if (pplns < graph_data[n]['ts'])
 		{
 			ctx.fillStyle = "#009696";
 			ctx.fillRect(n, 148, 1,1);
@@ -504,7 +504,7 @@ function poolstats(e)
 	gnr.innerHTML = format_hashrate(graph_data[stat_lookup]['nr']);
 	gpr.innerHTML = format_hashrate(graph_data[stat_lookup]['pr']);
 	d = new Date(graph_data[stat_lookup]['ts']*1000);
-	gts.innerHTML = d.toLocaleString();
+	gts.innerHTML = d.toGMTString();
 }
 
 function format_last_time(last)

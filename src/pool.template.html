@@ -346,8 +346,8 @@ function updatePayments(payment_data)
 function updateBlocks(block_data)
 {
 	let now = new Date();
-	let thirty_days_ago = new Date(now.setDate(now.getDate() - 30));
-	var found_within_thirty = 0;
+	let three_days_ago = new Date(now.setDate(now.getDate() - 3));
+	var found_within_three = 0;
 	block_t = document.getElementById("block_table");
 	block_t.innerHTML = "<tr><td>Height</td><td>Status</td><td>Hash Match</td><td>To Unlock</td><td>Date</td><td>Reward</td><td>Effort</td></tr>";
 	maxeff = 0;
@@ -362,16 +362,16 @@ function updateBlocks(block_data)
 			uncounted_blocks = uncounted_blocks + 1;
 		}
 		d = new Date(block_data[i]['timestamp']*1000);
-		if (block_data[i]['timestamp']*1000 >= thirty_days_ago && block_data[i]['status'] != "ORPHANED")
+		if (block_data[i]['timestamp']*1000 >= three_days_ago && block_data[i]['status'] != "ORPHANED")
 		{
-			found_within_thirty = found_within_thirty + 1;
+			found_within_three = found_within_three + 1;
 		}
 		block_t.innerHTML = block_t.innerHTML + "<tr><td>" + block_data[i]['height'] + "</td><td>" + block_data[i]['status'] + "</td><td>" + block_data[i]['hash_match'] + "</td><td> " + block_data[i]['blocks_to_unlock'] + "/60</td><td>" + d.toGMTString() + "</td><td>" + block_data[i]['reward']/1000000000000 + "</td><td>" + block_data[i]['effort'] + "%</td></tr>";
 	}
 	avgeff = maxeff/(block_data.length-uncounted_blocks);
 	block_t.innerHTML = block_t.innerHTML + "<tr><td></td><td></td><td></td><td></td><td></td><td>Average Effort</td><td>"+avgeff.toFixed(2)+"%</td></tr>"
 	block_count = document.getElementById("block_count");
-	block_count.innerHTML = "We have found " + found_within_thirty + " blocks in the last 30 days";
+	block_count.innerHTML = "We have found " + found_within_three + " blocks in the last 3 days";
 }
 
 function togglePayout()

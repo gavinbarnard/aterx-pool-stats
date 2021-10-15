@@ -93,6 +93,7 @@
             <tr><td>Allow self-select: </td><td id="allow_self_select"></td></tr>
             <tr><td>Miners connected: </td><td id="connected_miners"></td></tr>
             <tr class="miner"><td>Your HR: </td><td id="miner_hashrate"></td></tr>
+			<tr class="miner"><td>10m - 30m - 60m: </td><td id="aggregate_hr"></td></tr>
             <tr class="miner"><td>Balance due: </td><td id="miner_balance"></td></tr>
 			<tr class="miner"><td><a class="alight" href="#potmine">Potential mining value</a>:</td><td id="payout_est"></td></tr>
 	    <tr class="miner"><td>Worker Count: </td><td id="worker_count"></td></tr>
@@ -639,6 +640,7 @@ function format_round_hashrate(round_hashes, last_block_found)
 var wf = document.querySelector("#address");
 var xhr = new XMLHttpRequest();
 var rhr = document.querySelector("#round_hashrate");
+var agg = document.getElementById("aggregate_hr");
 xhr.onload = function()
 {
 	var stats = JSON.parse(xhr.responseText);
@@ -669,6 +671,10 @@ xhr.onload = function()
 			el.closest("tr").style = "display: " +
 				(stats[e] == 0 ? "none;" : "table-row;");
 			el.innerHTML = stats[e];
+		}
+		else if (e == "miner_hashrate_stats")
+		{
+			agg.innerHTML = format_hashes(stats[e][1]) + " - " + format_hashes(stats[e][2]) + " - " + format_hashes(stats[e][3]);
 		}
 		else
 			el.innerHTML = stats[e];

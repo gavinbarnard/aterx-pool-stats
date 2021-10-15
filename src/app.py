@@ -86,8 +86,16 @@ def json_graph_stats():
     stat_array = []
     highest_p = 0
     highest_n = 0
-    lowest_p = -1
+    lowest_p = -1   
     files = get_files(config_items['stats_dir'] + "/*.json")
+    unused_var_zero, block_json = json_blocks_all_response()
+    blocks = json.loads(block_json)
+    now = datetime.now()
+    fifteen_hours_ago = now - 900 * 3600
+    blocks_in_last_fifteen = []
+    for block in blocks:
+        if block['timestamp'] >= fifteen_hours_ago:
+            blocks_in_last_fifteen.append(block)
     stat_data = read_files(files)
     sorted_keys = sorted(stat_data)
     # make sure we only have the latest 900 items
@@ -129,6 +137,13 @@ def json_graph_stats():
         else:
             percentile = 149
         stat_data[my_item]['prp'] = percentile
+        block_data = None
+        for block in blocks_in_last_fifteen:
+            if my_item == block['timestamp'] \
+                or (my_item - 59 <= block['timestamp']
+                and my_item + 59 >= block['timestamp']):
+                block_data = block
+
         stat_array.append(
                 { 'nr':  stat_data[my_item]['nr'],
                   'pr':  stat_data[my_item]['pr'],
@@ -136,7 +151,8 @@ def json_graph_stats():
                   'prp': stat_data[my_item]['prp'],
                   'nd': stat_data[my_item]['nd'],
                   'pavg': p_avg_d,
-                  'ts': my_item
+                  'ts': my_item,
+                  'block': block_data
                   })
     return json_generic_response(stat_array)
 

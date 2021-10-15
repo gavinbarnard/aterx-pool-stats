@@ -485,6 +485,10 @@ function updateGraph(graph_data)
 				color = "#FF0000"
 			}
 			effort = 150 - effort;
+			ctx.fillstyle = "#FFFFFF";
+			ctx.fillRect(n-4,effort-4,8,8);
+			ctx.fillstyle = "#000000";
+			ctx.fillRect(n-3,effort-3,6,6);
 			ctx.fillStyle = color;
 			ctx.fillRect(n-2,effort-2,4,4);
 		}

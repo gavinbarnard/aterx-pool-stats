@@ -550,11 +550,11 @@ function poolstats(e)
 		{
 			color = "#FF0000"
 		}
-		block_data.innerHTML = "<tr><td>Block: </td><td><font color='" + color + "'>" + block['height'] + "</font></td></tr>";
+		block_data.innerHTML = "<font color='" + color + "'>" + block['height'] + "</font>";
 	}
 	else
 	{
-		block_data.innerHTML = "";
+		block_data.innerHTML = "None";
 	}
 }
 
@@ -744,8 +744,7 @@ if (jar.dark_mode && (jar.dark_mode == 0 || jar.dark_mode == 1))
 	<table class="poolstate"><tr><td><font color="#FF0000">NR:</font></td><td class="poolstate" id='graph_nr'></td></tr>
 	<tr><td class="poolstate"><font color="#00FF00">PR:</font></td><td class="poolstate" id='graph_pr'></td></tr>
 	<tr><td class="poolstate">Time:</td><td class="poolstate" id="graph_dt"></td></tr>
-	</table>
-	<table class="poolstate" id="block_data">
+	<tr><td class="poolstate">Block:</td><td class="poolstate" id="block_data"></td></tr>
 	</table>
 	</div>
 	<div id="pplns_est" style="opacity: 0.0;">

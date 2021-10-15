@@ -466,6 +466,28 @@ function updateGraph(graph_data)
 			ctx.fillStyle = "#009696";
 			ctx.fillRect(n, 148, 1,1);
 		}
+		if (graph_data[n]['block'] != null)
+		{
+			effort = Math.floor(graph_data[n]['block']['effort']);
+			if (effort > 150) {
+				effort = 150;
+			}
+			if (effort < 100)
+			{
+				color = "#00FF00";
+			}
+			else if (effort < 150)
+			{
+				color = "#FFFF00"
+			}
+			else if (effort >= 150)
+			{
+				color = "#FF0000"
+			}
+			effort = 150 - effort;
+			ctx.fillStyle = color;
+			ctx.fillRect(n-2,effort-2,4,4)
+		}
 	}
 	pavg = phr/900;
 	pavg = pavg.toFixed(2);
@@ -495,6 +517,7 @@ function hidepoolstats()
 function poolstats(e)
 {
 	poolstate = document.getElementById("poolstate");
+	block_data = document.getElementById("block_data");
 	poolstate.style.position = "fixed";
 	poolstate.style.top = (e.pageY-75) - window.scrollY +"px";
 	poolstate.style.left = e.pageX + "px";
@@ -508,6 +531,27 @@ function poolstats(e)
 	gpr.innerHTML = format_hashrate(graph_data[stat_lookup]['pr']);
 	d = new Date(graph_data[stat_lookup]['ts']*1000);
 	gts.innerHTML = d.toGMTString();
+	if (graph_data[stat_lookup]['block'] != null)
+	{
+		block = graph_data[stat_lookup]['block'];
+		if (block['effort'] < 100)
+		{
+			color = "#00FF00";
+		}
+		else if (block['effort'] < 150)
+		{
+			color = "#FFFF00"
+		}
+		else if (block['effort'] >= 150)
+		{
+			color = "#FF0000"
+		}
+		block_data.innerHTML = "<tr><td>Block: </td><td><font color='" + color + "'>" + block['height'] + "</font></td></tr>"
+	}
+	else
+	{
+		block_data.innerHTML = "";
+	}
 }
 
 function format_last_time(last)
@@ -696,6 +740,8 @@ if (jar.dark_mode && (jar.dark_mode == 0 || jar.dark_mode == 1))
 	<table class="poolstate"><tr><td><font color="#FF0000">NR:</font></td><td class="poolstate" id='graph_nr'></td></tr>
 	<tr><td class="poolstate"><font color="#00FF00">PR:</font></td><td class="poolstate" id='graph_pr'></td></tr>
 	<tr><td class="poolstate">Time:</td><td class="poolstate" id="graph_dt"></td></tr>
+	</table>
+	<table class="poolstate" id="block_data">
 	</table>
 	</div>
 	<div id="pplns_est" style="opacity: 0.0;">

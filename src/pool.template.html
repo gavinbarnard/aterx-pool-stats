@@ -673,7 +673,7 @@ xhr.onload = function()
 		}
 		else if (e == "miner_hashrate_stats")
 		{
-			el.innerHTML = format_hashes(stats[e][1]) + " - " + format_hashes(stats[e][2]) + " - " + format_hashes(stats[e][3]);
+			el.innerHTML = format_hashes(stats[e][1]) + "/s - " + format_hashes(stats[e][2]) + "/s - " + format_hashes(stats[e][3]) + "/s";
 		}
 		else
 			el.innerHTML = stats[e];

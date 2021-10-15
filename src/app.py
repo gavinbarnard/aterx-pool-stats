@@ -140,8 +140,8 @@ def json_graph_stats():
         block_data = None
         for block in blocks_in_last_fifteen:
             if my_item == block['timestamp'] \
-                or (my_item - 59 <= block['timestamp']
-                and my_item + 59 >= block['timestamp']):
+                or (my_item - 30 <= block['timestamp']
+                and my_item + 30 >= block['timestamp']):
                 block_data = block
 
         stat_array.append(

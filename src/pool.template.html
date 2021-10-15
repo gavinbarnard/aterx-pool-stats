@@ -486,7 +486,7 @@ function updateGraph(graph_data)
 			}
 			effort = 150 - effort;
 			ctx.fillStyle = color;
-			ctx.fillRect(n-2,effort-2,4,4)
+			ctx.fillRect(n-2,effort-2,4,4);
 		}
 	}
 	pavg = phr/900;
@@ -546,7 +546,7 @@ function poolstats(e)
 		{
 			color = "#FF0000"
 		}
-		block_data.innerHTML = "<tr><td>Block: </td><td><font color='" + color + "'>" + block['height'] + "</font></td></tr>"
+		block_data.innerHTML = "<tr><td>Block: </td><td><font color='" + color + "'>" + block['height'] + "</font></td></tr>";
 	}
 	else
 	{

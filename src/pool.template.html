@@ -470,7 +470,7 @@ function updateGraph(graph_data)
 		{
 			effort = Math.floor(graph_data[n]['block']['effort']);
 			if (effort > 150) {
-				effort = 146;
+				effort = 150;
 			}
 			if (effort < 100)
 			{
@@ -483,6 +483,10 @@ function updateGraph(graph_data)
 			else if (effort >= 150)
 			{
 				color = "#FF0000"
+			}
+			if (effort >= 150)
+			{
+				effort = 146;
 			}
 			effort = 150 - effort;
 			ctx.fillStyle = "#FFFFFF";

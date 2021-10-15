@@ -90,7 +90,7 @@ def json_graph_stats():
     files = get_files(config_items['stats_dir'] + "/*.json")
     unused_var_zero, block_json = json_blocks_all_response()
     blocks = json.loads(block_json)
-    now = datetime.now()
+    now = int(datetime.now().timestamp())
     fifteen_hours_ago = now - 900 * 3600
     blocks_in_last_fifteen = []
     for block in blocks:

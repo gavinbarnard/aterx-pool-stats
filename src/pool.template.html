@@ -469,7 +469,7 @@ function updateGraph(graph_data)
 		}
 		if (graph_data[n]['block'] != null)
 		{
-			if (graph_data[n]['hash_match'])
+			if (graph_data[n]['block']['hash_match'])
 			{
 				effort = Math.floor(graph_data[n]['block']['effort']);
 				if (effort > 150) {

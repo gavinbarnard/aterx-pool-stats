@@ -41,11 +41,6 @@ const bonusUpdate = async() => {
     let bonus_html = document.getElementById("bonus_rig");
     bonus_html.innerHTML = `BonusRig target: ${APIData.substring(1,7)}`;
 }
-const pplnsUpdate = async() => {
-    const APIData = await getFromAPI("0/pplns_est");
-    let pplns_est = document.getElementById("pplns_est");
-    pplns_est.innerHTML = APIData.pplns_end
-}
 const multiUpdate = async() => {
     const APIData = await getFromAPI("0/multi");
     let multi_ele = document.getElementById("multi");
@@ -58,9 +53,6 @@ const rigUpdate = async() => {
     for(i = 0; i < APIData.length; i++) {
         connected_rigs.innerHTML+=`${connected_rigs.innerHTML} ${isNaN(APIData[i]) ? APIData[i].replace("<", "&lt;").replace(">", "&gt;") : formatHashes(APIData[i])} :&nbsp; ${APIData[i+1]} </br>`;
     }
-}
-const blockUpdate = async() => {
-    updateBlocks(await getFromAPI("0/blocks.all"));
 }
 const paymentsUpdate = async(type) => {
     const APIData = await getFromAPI(`0/payments${type == "type" ? "": ".summary"}`);
@@ -106,31 +98,6 @@ const statsUpdate = async () => {
     pool_hashrate.innerHTML = `${formatHashes(APIData.pool_hashrate)}/s`;
 }
 
-// toggle functions
-function togglePayout(){
-    // NOTE: work on this
-    let ptype = document.getElementById("payout_type");
-    const ptypeToggle = ptype.innerHTML == "pool" ? "personal" : "pool"
-    ptype.innerHTML = ptypeToggle;
-    paymentsUpdate(ptypeToggle)
-}
-function toggleDark(toggle){
-    let dark_mode = JSON.parse(getCookie("dark_mode") ?? false)
-
-    if (toggle) dark_mode = !dark_mode
-
-    const address_div = document.getElementById("address");
-    address_div.style.borderBottom = dark_mode ? "1px dashed white" : "1px dashed black"
-    document.body.style.background = dark_mode ? "#000000" : "#FFFFFF";
-    document.body.style.color = dark_mode ? "#FFFFFF" : "#000000";
-    
-    const x = document.querySelectorAll("a");
-    for (i = 0; i < x.length; i++) x[i].className = dark_mode ? "adark" : "alight";
-
-    setCookie("dark_mode", dark_mode);
-}
-
-
 // update funtions
 function updatePayments(payment_data){
     ptype = document.getElementById("payout_type");
@@ -143,23 +110,23 @@ function updatePayments(payment_data){
 function updateBlocks(block_data){
     // NOTE: work on this
     let now = new Date();
-    let thirty_days_ago = new Date(now.setDate(now.getDate() - 30));
+    const thirty_days_ago = new Date(now.setDate(now.getDate() - 30));
     let found_within_thirty = 0;
     block_t = document.getElementById("block_table");
     block_t.innerHTML = "<tr><td>Height</td><td>Status</td><td>Hash Match</td><td>To Unlock</td><td>Date</td><td>Reward</td><td>Effort</td></tr>";
     let maxeff = 0;
     uncounted_blocks = 0;
     for (i = 0; i < block_data.length; i++){
-        if (block_data[i]['status'] != "ORPHANED") {
+        if (block_data[i].status != "ORPHANED") {
             maxeff = maxeff + block_data[i].effort;
         } else {
             uncounted_blocks = uncounted_blocks + 1;
         }
-        d = new Date(block_data[i]['timestamp']*1000);
-        if (block_data[i]['timestamp']*1000 >= thirty_days_ago){
+        d = new Date(block_data[i].timestamp*1000);
+        if (block_data[i].timestamp*1000 >= thirty_days_ago){
             found_within_thirty = found_within_thirty + 1;
         }
-        block_t.innerHTML = block_t.innerHTML + "<tr><td>" + block_data[i]['height'] + "</td><td>" + block_data[i]['status'] + "</td><td>" + block_data[i]['hash_match'] + "</td><td> " + block_data[i]['blocks_to_unlock'] + "/60</td><td>" + d.toGMTString() + "</td><td>" + block_data[i]['reward']/1000000000000 + "</td><td>" + block_data[i]['effort'] + "%</td></tr>";
+        block_t.innerHTML = block_t.innerHTML + "<tr><td>" + block_data[i].height + "</td><td>" + block_data[i].status + "</td><td>" + block_data[i].hash_match + "</td><td> " + block_data[i].blocks_to_unlock + "/60</td><td>" + d.toGMTString() + "</td><td>" + block_data[i].reward/1000000000000 + "</td><td>" + block_data[i].effort + "%</td></tr>";
     }
     avgeff = maxeff/(block_data.length-uncounted_blocks);
     block_t.innerHTML = block_t.innerHTML + "<tr><td></td><td></td><td></td><td></td><td></td><td>Average Effort</td><td>"+avgeff.toFixed(2)+"%</td></tr>"
@@ -168,20 +135,16 @@ function updateBlocks(block_data){
 }
 async function updateGraph(){
     const graph_data = await getFromAPI('0/graph_stats.json')
-
     const graphAPIData = await getFromAPI('0/pplns_est')
-    // const pplns_est_ele = document.getElementById("pplns_est");
-    // const pplns = parseInt(pplns_est_ele.innerHTML);
-    let graph = document.getElementById("shittygraph");
-    let ctx = graph.getContext('2d');
-
     const dark_mode = JSON.parse(getCookie("dark_mode") ?? false);
-
+   
+    let ctx = document.getElementById("shittygraph").getContext('2d');
     ctx.fillStyle = dark_mode ? "black" : "white"
     ctx.fillRect(0, 0, 900,150);
+
     let phr = 0;
     for (n = 0; n < graph_data.length; n++) {
-        phr = phr + graph_data[n]['pr']
+        phr = phr + graph_data[n].pr
         if ( (n+1)%10 == 0 ){
             ctx.fillStyle = dark_mode ? "#080808" : "#F8F8F8";
             ctx.fillRect(n,0,1,150);
@@ -198,21 +161,43 @@ async function updateGraph(){
         }
     }
     pavg = (phr/900).toFixed(2);
-    poolavg = document.getElementById("poolavg");
-    poolavg.innerHTML = `${formatHashes(pavg)}/s`;
+    document.getElementById("poolavg").innerHTML = `${formatHashes(pavg)}/s`;
 
     blockfind = document.getElementById("blockfind");
-    b_chance = pavg / graph_data[graph_data.length-1]['nr'] * 30 * 24 * 30
+    b_chance = pavg / graph_data[graph_data.length-1].nr * 30 * 24 * 30
     if (b_chance>2){
         b_chance--;
     }
-    b_chance = b_chance.toFixed(2);
-    blockfind.innerHTML = "At the pool average hashrate we will hopefully find about " + b_chance + " blocks every 30 days</br>";
+    blockfind.innerHTML = `At the pool average hashrate we will hopefully find about ${b_chance.toFixed(2)} blocks every 30 days</br>`;
     if (graphAPIData.pplns_end != 0){
         d = new Date(graphAPIData.pplns_end*1000);
         pplns_block = document.getElementById("pplns_block");
         pplns_block.innerHTML = "<font color='#009696'>The PPLNS Window goes back until roughly " + d.toGMTString() + "</font></br>";
     }
+}
+
+// toggle functions
+function togglePayout(){
+    // NOTE: work on this
+    let ptype = document.getElementById("payout_type");
+    const ptypeToggle = ptype.innerHTML == "pool" ? "personal" : "pool"
+    ptype.innerHTML = ptypeToggle;
+    paymentsUpdate(ptypeToggle)
+}
+const toggleDark = toggle => {
+    let dark_mode = JSON.parse(getCookie("dark_mode") ?? false)
+
+    if (toggle) dark_mode = !dark_mode
+
+    const address_div = document.getElementById("address");
+    address_div.style.borderBottom = dark_mode ? "1px dashed white" : "1px dashed black"
+    document.body.style.background = dark_mode ? "#000000" : "#FFFFFF";
+    document.body.style.color = dark_mode ? "#FFFFFF" : "#000000";
+    
+    const x = document.querySelectorAll("a");
+    for (i = 0; i < x.length; i++) x[i].className = dark_mode ? "adark" : "alight";
+
+    setCookie("dark_mode", dark_mode);
 }
 
 // stats funtions
@@ -241,17 +226,17 @@ async function poolstats(e){
 
 
     const graph_data = await getFromAPI('0/graph_stats.json')
-    gnr.innerHTML = `${formatHashes(graph_data[stat_lookup]['nr'])}/s`
-    gpr.innerHTML = `${formatHashes(graph_data[stat_lookup]['pr'])}/s`
+    gnr.innerHTML = `${formatHashes(graph_data[stat_lookup].nr)}/s`
+    gpr.innerHTML = `${formatHashes(graph_data[stat_lookup].pr)}/s`
     
-    d = new Date(graph_data[stat_lookup]['ts']*1000);
+    d = new Date(graph_data[stat_lookup].ts*1000);
     gts.innerHTML = d.toLocaleString();
 }
 
 
 
 
-
+// get and set cookies
 const getCookie = cname => {
     let ca = decodeURIComponent(document.cookie).split('; '), json = {};
     for (let i = 0; i < ca.length; i++) {
@@ -259,24 +244,19 @@ const getCookie = cname => {
     }
     return json[cname];
 }
-function setCookie(key, value) {
+const setCookie = (key, value) => {
     let expires = new Date();
     expires.setTime(expires.getTime() + (1 * 24 * 60 * 60 * 1000));
     document.cookie = key + '=' + value + ';expires=' + expires.toUTCString();
 }
 
-
-
-
-
 // html functions
-
-window.onload = function(){
+window.onload = () => {
     document.getElementById("address").addEventListener("blur", e=>{
         setCookie("wa", this.innerText)
         window.location.reload();
     });
-    //NOTE: work on this
+
     const walletAddress = getCookie("wa")
     if (walletAddress && /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/.test(walletAddress)){
         const m = document.querySelectorAll(".miner");
@@ -287,9 +267,8 @@ window.onload = function(){
     }
     
     const get_stats = async () => {
-        pplnsUpdate();
         multiUpdate()
-        blockUpdate()
+        updateBlocks(await getFromAPI("0/blocks.all"));
         paymentsUpdate(document.getElementById("payout_type").innerHTML)
         statsUpdate()
         bonusUpdate()

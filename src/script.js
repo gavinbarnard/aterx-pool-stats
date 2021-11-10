@@ -178,7 +178,6 @@ async function updateGraph(){
 
 // toggle functions
 function togglePayout(){
-    // NOTE: work on this
     let ptype = document.getElementById("payout_type");
     const ptypeToggle = ptype.innerHTML == "pool" ? "personal" : "pool"
     ptype.innerHTML = ptypeToggle;

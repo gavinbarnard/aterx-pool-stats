@@ -202,14 +202,10 @@ const toggleDark = toggle => {
 
 // stats funtions
 function hidepoolstats(){
-    // NOTE: work on this
-    poolstate = document.getElementById("poolstate");
-    gnr = document.getElementById("graph_nr");
-    gpr = document.getElementById("graph_pr");
-    gnr.innerHTML = "";
-    gpr.innerHTML = "";
+    document.getElementById("graph_nr").innerHTML = "";
+    document.getElementById("graph_pr").innerHTML = "";
+    poolstate = document.getElementById("poolstate").style.opacity = 0.0;
     gts.innerHTML = "";
-    poolstate.style.opacity = 0.0;
 }
 async function poolstats(e){
     // NOTE: work on this

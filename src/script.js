@@ -100,6 +100,7 @@ const statsUpdate = async () => {
 
 // update funtions
 function updatePayments(payment_data){
+    // NOTE: work on this
     ptype = document.getElementById("payout_type");
     payments_t = document.getElementById("payments_table");
     payments_t.innerHTML = "";
@@ -208,28 +209,19 @@ function hidepoolstats(){
 }
 async function poolstats(e){
     // NOTE: work on this
-    poolstate = document.getElementById("poolstate");
+    let poolstate = document.getElementById("poolstate");
     poolstate.style.position = "fixed";
     poolstate.style.top = (e.pageY-75) - window.scrollY +"px";
     poolstate.style.left = e.pageX + "px";
     poolstate.style.opacity = 100;
-    gnr = document.getElementById("graph_nr");
-    gpr = document.getElementById("graph_pr");
-    gts = document.getElementById("graph_dt");
-    let rect = e.target.getBoundingClientRect();
-    stat_lookup = e.clientX - rect.left;
 
+    const stat_lookup = e.clientX - e.target.getBoundingClientRect().left;
 
     const graph_data = await getFromAPI('0/graph_stats.json')
-    gnr.innerHTML = `${formatHashes(graph_data[stat_lookup].nr)}/s`
-    gpr.innerHTML = `${formatHashes(graph_data[stat_lookup].pr)}/s`
-    
-    d = new Date(graph_data[stat_lookup].ts*1000);
-    gts.innerHTML = d.toLocaleString();
+    document.getElementById("graph_nr").innerHTML = `${formatHashes(graph_data[stat_lookup].nr)}/s`
+    document.getElementById("graph_pr").innerHTML = `${formatHashes(graph_data[stat_lookup].pr)}/s`
+    document.getElementById("graph_dt").innerHTML = new Date(graph_data[stat_lookup].ts*1000).toLocaleString();
 }
-
-
-
 
 // get and set cookies
 const getCookie = cname => {

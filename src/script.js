@@ -156,25 +156,19 @@ async function updateGraph(){
         ctx.fillRect(n,graph_data[n].prp,1,1);
         ctx.fillStyle = "#FF0000";
         ctx.fillRect(n,graph_data[n].nrp,1,1);
-        if (graph_data[n]['ts'] > graphAPIData.pplns_end){
+        if (graph_data[n].ts > graphAPIData.pplns_end){
             ctx.fillStyle = "#009696";
             ctx.fillRect(n, 148, 1,1);
         }
     }
-    pavg = (phr/900).toFixed(2);
+    
+    const pavg = (phr/900).toFixed(2);
     document.getElementById("poolavg").innerHTML = `${formatHashes(pavg)}/s`;
 
-    blockfind = document.getElementById("blockfind");
-    b_chance = pavg / graph_data[graph_data.length-1].nr * 30 * 24 * 30
-    if (b_chance>2){
-        b_chance--;
-    }
-    blockfind.innerHTML = `At the pool average hashrate we will hopefully find about ${b_chance.toFixed(2)} blocks every 30 days</br>`;
-    if (graphAPIData.pplns_end != 0){
-        d = new Date(graphAPIData.pplns_end*1000);
-        pplns_block = document.getElementById("pplns_block");
-        pplns_block.innerHTML = "<font color='#009696'>The PPLNS Window goes back until roughly " + d.toGMTString() + "</font></br>";
-    }
+    const b_chance = pavg / graph_data[graph_data.length-1].nr * 30 * 24 * 30
+    document.getElementById("blockfind").innerHTML = `At the pool average hashrate we will hopefully find about ${(b_chance>2 ? b_chance-1: b_chance).toFixed(2)} blocks every 30 days</br>`;
+    
+    if (graphAPIData.pplns_end != 0) document.getElementById("pplns_block").innerHTML = `<font color='#009696'>The PPLNS Window goes back until roughly ${new Date(graphAPIData.pplns_end*1000).toGMTString()}</font></br>`;
 }
 
 // toggle functions

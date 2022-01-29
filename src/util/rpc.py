@@ -87,6 +87,16 @@ def wallet_get_tx_id(tx_id: str, rpc_port: int, site="localhost"):
             "txid": tx_id,
         }
     }
-    r = requests.get("http://{}:{}/json_rpc".format(site, rpc_port), data=json.dumps(data))
+    r = requests.post("http://{}:{}/json_rpc".format(site, rpc_port), data=json.dumps(data))
+    r.raise_for_status()
+    return r.json()
+
+def wallet_get_balance(rpc_port: int, site="localhost"):
+    data = {
+        "jsonrpc":"2.0",
+        "id":"0",
+        "method": "get_balance"
+    }
+    r = requests.post("http://{}:{}/json_rpc".format(site, rpc_port), data=json.dumps(data))
     r.raise_for_status()
     return r.json()

@@ -314,16 +314,14 @@ class db:
         cur.close()
         txn.commit()
         self.env.sync()
+        return rc
 
     def del_wallet(self, address):
         a, v = self.get_wallet(address)
         print("{}: {}".format(a, v))
         txn = self.env.begin(db=self.db, write=True)
         cur = txn.cursor()
-        if int(version[0]) >= 3:
-            baddr = bytes(address, 'utf-8')
-        elif int(version[0]) == 2:
-            baddr = bytes(address)
+        baddr = bytes(address, 'utf-8')
         dif = ADDRESS_MAX - len(baddr)
         baddr += b"\0" * dif
         if cur.get(baddr):

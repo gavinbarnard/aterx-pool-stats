@@ -133,7 +133,7 @@ if __name__ == "__main__":
         if int(wallet['amount']) > THRESHOLD:
             to_pay.append(wallet)
     txs_needed = int(len(to_pay)/15)
-    if txs_needed % 15 != 0:
+    if int(len(to_pay)) % 15 != 0:
         txs_needed += 1
     print("Found {} wallets to pay\nNeed {} txes\n".format(len(to_pay), txs_needed))
     outbound_tx = []

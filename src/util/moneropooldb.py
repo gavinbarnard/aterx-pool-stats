@@ -44,6 +44,8 @@ from ctypes import *
 from datetime import datetime
 from math import floor
 
+ADDRESS_MAX = 128
+
 class share_t(Structure):
     _fields_ = [('height', c_longlong),
                 ('difficulty', c_longlong),
@@ -106,6 +108,34 @@ def get_balance(path, waddress=None):
                             "amount": amount})
     env.close()
     return response
+
+
+def set_wallet_balance(path, address, value):
+    env = lmdb.open(path, readonly=False, max_dbs=1)
+    txn = env.begin(db='balance'.encode(), write=True)
+    cur = txn.cursor()
+    baddr = bytes(address, 'utf-8')
+    dif = ADDRESS_MAX - len(baddr)
+    baddr += b"\0" * dif
+    value = float(value)
+    amount = int(value * 1e12)
+    amount = amount.to_bytes(sizeof(c_longlong), byteorder='little')
+    rc = cur.get(baddr)
+    if rc and rc != lmdb.NotFoundError:
+        rc = cur.put(baddr,
+                        amount,
+                        overwrite=True,
+                        append=False,
+                        dupdata=False)
+    else:
+        rc = cur.put(baddr, amount, overwrite=True, dupdata=False)
+    
+    if rc and rc != lmdb.KeyExistsError:
+        cur.close()
+        txn.commit()
+        env.sync()
+    env.close()
+    return rc
 
 def get_payments(path, waddress=None):
     response = []

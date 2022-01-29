@@ -31,6 +31,7 @@ class TransactionFull(Exception):
 class Payment(object):
     def __init__(self, to_wallet, amount):
         self.to_wallet = to_wallet
+        self.addr = self.to_wallet
         self.amount = int(amount)
         self.fail_count = 0
         self.fail_responses = []

@@ -12,11 +12,13 @@ THRESHOLD = int(0.005 * 1e12)
 WALLET_PORT = 28094
 DATA_DIR = "/tmp/testbuild/data-dir"
 PAYOUT_DIR = "/home/monero/payout_dir"
+DRY_RUN = False
 
 class PaymentState(Enum):
     QUEUE = 0
     PENDING = 1
-    SUCCESS = 2
+    PAIDONCHAIN = 2
+    SUCCESS = 3
     FAILED = 255
 
 class PaymentAlreadyInTransaction(Exception):
@@ -33,8 +35,6 @@ class Payment(object):
         self.to_wallet = to_wallet
         self.addr = self.to_wallet
         self.amount = int(amount)
-        self.fail_count = 0
-        self.fail_responses = []
 
 class Transaction(object):
     def __init__(self, state=PaymentState.QUEUE):
@@ -42,6 +42,8 @@ class Transaction(object):
         self.amount = 0
         self.state = state
         self.tx_hash = None
+        self.fail_count = 0
+        self.fail_responses = []
 
     def _update_payment_state(self):
         if self.tx_hash and self.state == PaymentState.PENDING:
@@ -50,7 +52,7 @@ class Transaction(object):
                 if "transfer" in tx['result'].keys():
                     if "type" in tx['result']['transfer'].keys():
                         if tx['result']['transfer']['type'] == "out":
-                            self.state = PaymentState.SUCCESS
+                            self.state = PaymentState.PAIDONCHAIN
                         elif tx['result']['transfer']['type'] == "failed":
                             self.state = PaymentState.FAILED
                         elif tx['result']['transfer']['type'] == "pending":
@@ -83,21 +85,27 @@ class Transaction(object):
     def send_tx_to_wallet_rpc(self):
         if self.state == PaymentState.QUEUE:
             payload = self.build_transfer_data()
-            try:
-                r = requests.post("http://localhost:{}/json_rpc".format(WALLET_PORT), data=json.dumps(payload))
-                r.raise_for_status()
-            except requests.exceptions.HTTPError as e:
-                print("There was a problem talking to the RPC wallet - {}".format(e))
-            response = r.json()
-            if "result" in response.keys():
-                if "tx_hash" in response['result'].keys():
-                    self.tx_hash = response['result']['tx_hash']
-                    self.state = PaymentState.PENDING
-            if self.tx_hash:
-                return True
+            if DRY_RUN:
+                print(json.dumps(payload, indent=True))
             else:
-                self.state = PaymentState.FAILED
-                return False
+                try:
+                    r = requests.post("http://localhost:{}/json_rpc".format(WALLET_PORT), data=json.dumps(payload))
+                    r.raise_for_status()
+                except requests.exceptions.HTTPError as e:
+                    print("There was a problem talking to the RPC wallet - {}".format(e))
+                response = r.json()
+                if "result" in response.keys():
+                    if "tx_hash" in response['result'].keys():
+                        self.tx_hash = response['result']['tx_hash']
+                        self.state = PaymentState.PENDING
+                if self.tx_hash:
+                    return True
+                elif "error" in response.keys():
+                    self.state = PaymentState.FAILED
+                    self.fail_responses.append(response)
+                else:
+                    self.state = PaymentState.FAILED
+                    return False
 
     def get_payment_state(self):
         if self.tx_hash and self.state == PaymentState.PENDING:
@@ -111,7 +119,7 @@ class Transaction(object):
             return None
     
     def write_tx_record(self):
-        if self.state == PaymentState.SUCCESS or self.state == PaymentState.PENDING:
+        if self.state == PaymentState.PAIDONCHAIN or self.state == PaymentState.PENDING:
             tx = self.get_tx()
             with open("{}/{}.json".format(PAYOUT_DIR, self.tx_hash), mode='w') as fh:
                 fh.write(json.dumps(tx, indent=True))
@@ -121,9 +129,25 @@ class Transaction(object):
                 self.tx_hash = str(uuid4())
             with open("{}/{}-FAILED.json".format(PAYOUT_DIR, self.tx_hash), mode='w') as fh:
                 if tx:
-                        fh.write(json.dumps(tx, indent=True))
+                    fh.write(json.dumps(tx, indent=True))
                 else:
-                        fh.write(json.dumps(self.build_transfer_data(), indent=True))
+                    fh.write(json.dumps(self.build_transfer_data(), indent=True))
+                if self.fail_responses:
+                    fh.write(json.dumps(self.fail_responses, indent=True))
+
+    def subtract_payouts(self):
+        if self.state == PaymentState.PAIDONCHAIN:
+            print("Payment is out on blockchain with tx_id {}".format(self.tx_hash))
+            for pay in self.payments:
+                unused_addr, cur_bal = wallet_db.get_wallet(pay.to_wallet)
+                bal = cur_bal - pay.amount
+                print("wallet {} old balance {} subtracting payout {} for total of {}".format(pay.to_wallet, cur_bal, pay.amount, bal))
+                rc = wallet_db.set_wallet_value(pay.to_wallet, bal)
+                print("db response on balance update is {}".format(rc))
+            self.set_success()
+
+    def set_success(self):
+        self.state = PaymentState.SUCCESS
 
 if __name__ == "__main__":
     wallet_db = db()
@@ -151,42 +175,49 @@ if __name__ == "__main__":
         outbound_tx.append(my_tx)
     print("Created {} txes".format(len(outbound_tx)))
 
-    for tx in outbound_tx:
-        totalpay = 0
-        for pay in tx.payments:
-            totalpay += pay.amount
-        wallet_balance = wallet_get_balance(WALLET_PORT)
-        unlocked_balance = wallet_balance['result']['unlocked_balance']
-        balance = wallet_balance['result']['balance']
-        if balance <= totalpay:
-            print("Wallet has less funds than needed for tx have - have {} need {}".format(balance, totalpay))
-            exit(1)
+    finished_txs = []
 
-        while unlocked_balance <= totalpay:
-            print("Unlocked balance does not have enough to pay - waiting - have {} need {} - total bal {}".format(unlocked_balance, totalpay, balance))
-            wallet_balance = wallet_get_balance(WALLET_PORT)
-            unlocked_balance = wallet_balance['result']['unlocked_balance']
-            sleep(10)
-        
-        while tx.state == PaymentState.QUEUE or tx.state == PaymentState.PENDING:
-            if tx.state == PaymentState.QUEUE:
-                tx.send_tx_to_wallet_rpc()
-            elif tx.state == PaymentState.PENDING:
-                while tx.state == PaymentState.PENDING:
+    while len(finished_txs) != txs_needed:
+        for tx in outbound_tx:
+            if tx not in finished_txs:
+                totalpay = 0
+                for pay in tx.payments:
+                    totalpay += pay.amount
+                wallet_balance = wallet_get_balance(WALLET_PORT)
+                unlocked_balance = wallet_balance['result']['unlocked_balance']
+                balance = wallet_balance['result']['balance']
+                if balance <= totalpay:
+                    print("Wallet has less funds than needed for tx have - have {} need {}".format(balance, totalpay))
+                    continue
+                if tx.state == PaymentState.QUEUE:
+                    if unlocked_balance <= totalpay:
+                        print("Unlocked balance does not have enough to pay - waiting - have {} need {} - total bal {}".format(unlocked_balance, totalpay, balance))
+                        wallet_balance = wallet_get_balance(WALLET_PORT)
+                        unlocked_balance = wallet_balance['result']['unlocked_balance']
+                    else:
+                        tx.send_tx_to_wallet_rpc()
+                elif tx.state == PaymentState.PENDING:
                     print("Payment is pending on blockchain with tx_id {}".format(tx.tx_hash))
                     tx.get_payment_state()
-                    sleep(10)
-        
-        tx.write_tx_record()
-        if tx.state == PaymentState.SUCCESS:
-            print("Payment is out on blockchain with tx_id {}".format(tx.tx_hash))
-            for pay in tx.payments:
-                unused_addr, cur_bal = wallet_db.get_wallet(pay.to_wallet)
-                bal = cur_bal - pay.amount
-                print("wallet {} old balance {} subtracting payout {} for total of {}".format(pay.to_wallet, cur_bal, pay.amount, bal))
-                rc = wallet_db.set_wallet_value(pay.to_wallet, bal)
-                print("db response on balance update is {}".format(rc))
-        else:
-            print("Transaction failed")
+                
+                if tx.state == PaymentState.PAIDONCHAIN:
+                    tx.subtract_payouts()
+                    if tx not in finished_txs:
+                        tx.write_tx_record()
+                        finished_txs.append(tx)
+
+                if tx.state == PaymentState.FAILED:
+                    print("Payment failed")
+                    if tx not in finished_txs:
+                        tx.write_tx_record()
+                        finished_txs.append(tx)
+
+                if tx.state == PaymentState.SUCCESS:
+                    print(f"{tx.tx_hash} SUCCESSFUL")
+            else:
+                print("Finished this TX and it {}".format(tx.state))
+        print(len(finished_txs))
+        sleep(10)
+
 
 

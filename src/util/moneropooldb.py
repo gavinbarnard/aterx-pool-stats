@@ -245,8 +245,11 @@ def get_pplns_window_estimate(path, with_rewards=False):
 
 class db:
     def __init__(self, db_path="{}/pool-dd".format(environ['HOME'])):
-        self.env = lmdb.open(db_path, max_dbs=1)
+        self.env = lmdb.open(db_path, max_dbs=1, map_size=10485760*4)
         self.db = self.env.open_db("balance".encode(), dupfixed=False)
+
+    def db_stat(self):
+        print(self.env.stat())
 
     def __del__(self):
 

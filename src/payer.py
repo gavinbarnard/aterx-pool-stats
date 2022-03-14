@@ -48,19 +48,38 @@ class Transaction(object):
     def _update_payment_state(self):
         if self.tx_hash and self.state == PaymentState.PENDING:
             tx = self.get_tx()
-            if "result" in tx.keys():
-                if "transfer" in tx['result'].keys():
-                    if "type" in tx['result']['transfer'].keys():
-                        if tx['result']['transfer']['type'] == "out":
-                            self.state = PaymentState.PAIDONCHAIN
-                        elif tx['result']['transfer']['type'] == "failed":
-                            self.state = PaymentState.FAILED
-                        elif tx['result']['transfer']['type'] == "pending":
-                            self.state = PaymentState.PENDING
+            pcount = 0
+            ocount = 0
+            fcount = 0
+            if type(tx) == list:
+                for txn in tx:
+                    if "result" in txn.keys():
+                        if "transfer" in txn['result'].keys():
+                            if "type" in txn['result']['transfer'].keys():
+                                if txn['result']['transfer']['type'] == "out":
+                                    ocount += 1
+                                elif txn['result']['transfer']['type'] == "failed":
+                                    fcount += 1
+                                    self.state = PaymentState.FAILED
+                                elif txn['result']['transfer']['type'] == "pending":
+                                    self.state = PaymentState.PENDING
+                                    pcount += 1
+                if ocount == len(self.tx_hash):
+                    self.state = PaymentState.PAIDONCHAIN
+            elif type(tx) == str:
+                if "result" in tx.keys():
+                    if "transfer" in tx['result'].keys():
+                        if "type" in tx['result']['transfer'].keys():
+                            if tx['result']['transfer']['type'] == "out":
+                                self.state = PaymentState.PAIDONCHAIN
+                            elif tx['result']['transfer']['type'] == "failed":
+                                self.state = PaymentState.FAILED
+                            elif tx['result']['transfer']['type'] == "pending":
+                                self.state = PaymentState.PENDING
 
     def add_payment(self, payment: Payment):
-        if len(self.payments) >= 15:
-            raise TransactionFull
+        #if len(self.payments) >= 15:
+        #    raise TransactionFull
         if payment not in self.payments:
             self.payments.append(payment)
         else:
@@ -70,7 +89,7 @@ class Transaction(object):
         data = {
             "jsonrpc": "2.0",
             "id": "0",
-            "method": "transfer",
+            "method": "transfer_split",
             "params": 
             {
                 "destinations": []
@@ -97,14 +116,19 @@ class Transaction(object):
                 if "result" in response.keys():
                     if "tx_hash" in response['result'].keys():
                         self.tx_hash = response['result']['tx_hash']
-                        self.state = PaymentState.PENDING
+                    elif "tx_hash_list":
+                        self.tx_hash = response['result']['tx_hash_list']
                 if self.tx_hash:
+                    self.state = PaymentState.PENDING
                     return True
                 elif "error" in response.keys():
                     self.state = PaymentState.FAILED
                     self.fail_responses.append(response)
+                    self.fail_count += 1
+                    return False
                 else:
                     self.state = PaymentState.FAILED
+                    self.fail_count += 1
                     return False
 
     def get_payment_state(self):
@@ -114,7 +138,14 @@ class Transaction(object):
 
     def get_tx(self):
         if self.tx_hash and self.state == PaymentState.PENDING:
-            return wallet_get_tx_id(self.tx_hash, WALLET_PORT)
+            if type(self.tx_hash) == list:
+                resp = []
+                for hash in self.tx_hash:
+                    r = wallet_get_tx_id(hash, WALLET_PORT)
+                    resp.append(r)
+                return resp
+            elif type(self.tx_hash) == str:
+                return wallet_get_tx_id(self.tx_hash, WALLET_PORT)
         else:
             return None
     
@@ -156,68 +187,50 @@ if __name__ == "__main__":
     for wallet in wallet_balances:
         if int(wallet['amount']) > THRESHOLD:
             to_pay.append(wallet)
-    txs_needed = int(len(to_pay)/15)
-    if int(len(to_pay)) % 15 != 0:
-        txs_needed += 1
-    print("Found {} wallets to pay\nNeed {} txes\n".format(len(to_pay), txs_needed))
-    outbound_tx = []
-    for i in range(0, txs_needed):
-        my_tx = Transaction()
-        for n in range(0, 15):
-            idx = i*15+n
-            if idx >= len(to_pay):
-                break
-            my_pay = Payment(to_pay[idx]['address'], int(to_pay[idx]['amount']))
-            try:
-                my_tx.add_payment(my_pay)
-            except TransactionFull or PaymentAlreadyInTransaction as e:
-                print("Error {} for {}".format(e,to_pay[idx]['address']))
-        outbound_tx.append(my_tx)
-    print("Created {} txes".format(len(outbound_tx)))
+    print("Found {} wallets to pay\n".format(len(to_pay)))
+    my_tx = Transaction()
+    for wall in to_pay:
+        my_pay = Payment(wall['address'], int(wall['amount']))
+        my_tx.add_payment(my_pay)
 
-    finished_txs = []
-
-    while len(finished_txs) != txs_needed:
-        for tx in outbound_tx:
-            if tx not in finished_txs:
-                totalpay = 0
-                for pay in tx.payments:
-                    totalpay += pay.amount
+    while my_tx.state in [ PaymentState.QUEUE, PaymentState.PENDING ]:
+        totalpay = 0
+        for pay in my_tx.payments:
+            totalpay += pay.amount
+        wallet_balance = wallet_get_balance(WALLET_PORT)
+        unlocked_balance = wallet_balance['result']['unlocked_balance']
+        balance = wallet_balance['result']['balance']
+        if balance <= totalpay:
+            print("Wallet has less funds than needed for tx have - have {} need {}".format(balance, totalpay))
+            continue
+        if my_tx.state == PaymentState.QUEUE:
+            if unlocked_balance <= totalpay:
+                print("Unlocked balance does not have enough to pay - waiting - have {} need {} - total bal {}".format(unlocked_balance, totalpay, balance))
                 wallet_balance = wallet_get_balance(WALLET_PORT)
                 unlocked_balance = wallet_balance['result']['unlocked_balance']
-                balance = wallet_balance['result']['balance']
-                if balance <= totalpay:
-                    print("Wallet has less funds than needed for tx have - have {} need {}".format(balance, totalpay))
-                    continue
-                if tx.state == PaymentState.QUEUE:
-                    if unlocked_balance <= totalpay:
-                        print("Unlocked balance does not have enough to pay - waiting - have {} need {} - total bal {}".format(unlocked_balance, totalpay, balance))
-                        wallet_balance = wallet_get_balance(WALLET_PORT)
-                        unlocked_balance = wallet_balance['result']['unlocked_balance']
-                    else:
-                        tx.send_tx_to_wallet_rpc()
-                elif tx.state == PaymentState.PENDING:
-                    print("Payment is pending on blockchain with tx_id {}".format(tx.tx_hash))
-                    tx.get_payment_state()
-                
-                if tx.state == PaymentState.PAIDONCHAIN:
-                    tx.subtract_payouts()
-                    if tx not in finished_txs:
-                        tx.write_tx_record()
-                        finished_txs.append(tx)
-
-                if tx.state == PaymentState.FAILED:
-                    print("Payment failed")
-                    if tx not in finished_txs:
-                        tx.write_tx_record()
-                        finished_txs.append(tx)
-
-                if tx.state == PaymentState.SUCCESS:
-                    print(f"{tx.tx_hash} SUCCESSFUL")
             else:
-                print("Finished this TX and it {}".format(tx.state))
-        print(len(finished_txs))
-        sleep(10)
+                my_tx.send_tx_to_wallet_rpc()
+        elif my_tx.state == PaymentState.PENDING:
+            print("Payment is pending on blockchain with tx_id {}".format(my_tx.tx_hash))
+            my_tx.get_payment_state()
+        
+        if my_tx.state == PaymentState.PAIDONCHAIN:
+            my_tx.subtract_payouts()
+            my_tx.write_tx_record()
+
+        if my_tx.state == PaymentState.FAILED:
+            print("Payment failed")
+            if (my_tx.fail_count > 2 or my_tx.tx_hash):
+                my_tx.write_tx_record()
+            elif my_tx.fail_count < 2 and my_tx.tx_hash == None:
+                print("Resetting to PaymentState.QUEUE")
+                my_tx.state = PaymentState.QUEUE
+
+        if my_tx.state == PaymentState.SUCCESS:
+            print(f"{my_tx.tx_hash} SUCCESSFUL")
+        else:
+            print("Tx is currently {} with {}".format(my_tx.state, my_tx.tx_hash))
+        sleep(2)
 
 
 

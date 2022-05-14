@@ -323,9 +323,7 @@ xmlhttp_payout.open("GET","/0/payout_est", true);
 xmlhttp_payout.send();
 function updatePayments(payment_data)
 {
-	ptype = document.getElementById("payout_type");
-	if (ptype.innerHTML == "pool")
-	{
+
 		payments_t = document.getElementById("payments_table");
 		payments_t.innerHTML = "";
 		for (i = 0; i < payment_data.length; i++)
@@ -334,18 +332,6 @@ function updatePayments(payment_data)
 			d = new Date(payment_data[i]['timestamp']*1000);
 			payments_t.innerHTML = payments_t.innerHTML + "<tr><td>" + reward + " XMR to " + payment_data[i]['miner_count'] + " miners on " + d.toGMTString() + "</td></tr>";
 		}
-	}
-	else if (ptype.innerHTML == "personal")
-	{
-		payments_t = document.getElementById("payments_table");
-		payments_t.innerHTML = "";
-		for (i = 0; i < payment_data.length; i++)
-		{
-			reward = payment_data[i]['amount'] / 1e+12;
-			d = new Date(payment_data[i]['dt']*1000);
-			payments_t.innerHTML = payments_t.innerHTML + "<tr><td>" + reward + " XMR to " + payment_data[i]['address'] + " on " + d.toGMTString() + "</td></tr>";
-		}
-	}
 }
 function updateBlocks(block_data)
 {
@@ -380,19 +366,9 @@ function updateBlocks(block_data)
 
 function togglePayout()
 {
-	ptype = document.getElementById("payout_type");
-	if (ptype.innerHTML == "pool")
-	{
-		ptype.innerHTML = "personal";
-		xmlhttp_payments.open("GET", "/0/payments",true);
-		xmlhttp_payments.send();
-	}
-	else
-	{
-		ptype.innerHTML = "pool";
-		xmlhttp_payments.open("GET", "/0/payments.summary",true);
-		xmlhttp_payments.send();
-	}
+	ptype.innerHTML = "pool";
+	xmlhttp_payments.open("GET", "/0/payments.summary",true);
+	xmlhttp_payments.send();
 }
 
 function toggleDark()
@@ -735,16 +711,8 @@ if (jar.dark_mode && (jar.dark_mode == 0 || jar.dark_mode == 1))
 		xmlhttp_rig.send();
 		xmlhttp_payout.open("GET","/0/payout_est", true);
 		xmlhttp_payout.send();
-		ptype = document.getElementById("payout_type");
-		if (ptype.innerHTML == "pool")
-		{
-			xmlhttp_payments.open("GET", "/0/payments.summary",true);
-			xmlhttp_payments.send();
-		} else
-		{
-			xmlhttp_payments.open("GET", "/0/payments",true);
-			xmlhttp_payments.send();
-		}
+		xmlhttp_payments.open("GET", "/0/payments.summary",true);
+		xmlhttp_payments.send();
 		xmlhttp_multi.open("GET","/0/multi", true);
 		xmlhttp_multi.send();
 	};

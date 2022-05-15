@@ -43,6 +43,9 @@ import lmdb
 from ctypes import *
 from datetime import datetime
 from math import floor
+from os import environ
+
+ADDRESS_MAX = 128
 
 class share_t(Structure):
     _fields_ = [('height', c_longlong),
@@ -84,7 +87,7 @@ def format_address(address):
 def address_from_key(key):
     return key.decode('utf-8').rstrip('\0')
 
-def get_balance(path, waddress=None):
+def get_balance(path, waddress=None, format=True):
     response = []
     env = lmdb.open(path, readonly=True, max_dbs=1, create=False)
     balance = env.open_db('balance'.encode())
@@ -93,7 +96,8 @@ def get_balance(path, waddress=None):
             for key, value in curs:
                 address = format_address(address_from_key(key))
                 amount = c_longlong.from_buffer_copy(value).value
-                amount = format_amount(amount)
+                if format:
+                    amount = format_amount(amount)
                 if waddress:
                     if waddress == address:
                         response.append(
@@ -238,6 +242,101 @@ def get_pplns_window_estimate(path, with_rewards=False):
                     return dt, rewards
                 else:
                     return dt
+
+class db:
+    def __init__(self, db_path="{}/pool-dd".format(environ['HOME'])):
+        self.env = lmdb.open(db_path, max_dbs=1, map_size=10485760*4)
+        self.db = self.env.open_db("balance".encode(), dupfixed=False)
+
+    def db_stat(self):
+        print(self.env.stat())
+
+    def __del__(self):
+
+        self.env.close()
+
+    def get_wallet(self, address):
+        txn = self.env.begin(db=self.db, write=False)
+        cur = txn.cursor()
+        baddr = bytes(address, 'utf-8')
+        dif = ADDRESS_MAX - len(baddr)
+        baddr += b"\0" * dif
+        amount = 0
+        if cur.get(baddr):
+            k, v = cur.item()
+            amount = c_longlong.from_buffer_copy(v).value
+        else:
+            amount = -1
+        cur.close()
+        txn.abort()
+        return address, amount
+
+    def get_wallets(self):
+        response = []
+        txn = self.env.begin(db=self.db, write=False)
+        with txn.cursor() as curs:
+            for key, value in curs:
+                address = format_address(address_from_key(key))
+                amount = c_longlong.from_buffer_copy(value).value
+                response.append(
+                    {"address": address, "amount": amount}
+                )
+        return response
+
+
+    def list_wallets(self):
+        txn = self.env.begin(db=self.db, write=False)
+        cur = txn.cursor()
+        k = cur.first()
+        wallets = []
+        while k:
+            addr, v = cur.item()
+            addr = str(addr, 'utf-8').strip()
+            wallets.append(addr)
+            k = cur.next()
+        return wallets
+
+    def set_wallet_value(self, address, value):
+        txn = self.env.begin(db=self.db, write=True)
+        cur = txn.cursor()
+        baddr = bytes(address, 'utf-8')
+        dif = ADDRESS_MAX - len(baddr)
+        baddr += b"\0" * dif
+        #value = float(value)
+        amount = int(value)
+        amount = amount.to_bytes(sizeof(c_longlong), byteorder='little')
+        rc = cur.get(baddr)
+        if rc and rc != lmdb.NotFoundError:
+            rc = cur.put(baddr,
+                         amount,
+                         overwrite=True,
+                         append=False,
+                         dupdata=False)
+        else:
+            rc = cur.put(baddr, amount, overwrite=True, dupdata=False)
+        cur.close()
+        txn.commit()
+        self.env.sync()
+        return rc
+
+    def del_wallet(self, address):
+        a, v = self.get_wallet(address)
+        print("{}: {}".format(a, v))
+        txn = self.env.begin(db=self.db, write=True)
+        cur = txn.cursor()
+        baddr = bytes(address, 'utf-8')
+        dif = ADDRESS_MAX - len(baddr)
+        baddr += b"\0" * dif
+        if cur.get(baddr):
+            rc = cur.delete(baddr)
+            if rc:
+                print("Successfully deleted {}".format(address))
+            else:
+                print("There was an issue deleting {}".format(address))
+        cur.close()
+        txn.commit()
+        self.env.sync()
+
 
 if __name__ == '__main__':
     pass

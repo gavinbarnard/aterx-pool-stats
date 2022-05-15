@@ -13,6 +13,7 @@ WALLET_PORT = 28094
 DATA_DIR = "/tmp/testbuild/data-dir"
 PAYOUT_DIR = "/home/monero/payout_dir"
 DRY_RUN = False
+EXCLUDE_LIST = ["73sEiFJyUN16wWDYvGDeCjD7XL46K77QBGomFSSARZ4vBMJ751m1hDGfDP6itx9vxcYGCX78sgN9sNzposqEyMFmCxNJgxr", "45U6ZRiAAHoHYCmnsYocaaFLaxFESAdcoCWTLhoi9zgm49cJrWaTci12D5QVEcwtiuMSsSSKs1paiFoAoegx8iNH633Z9nY"]
 
 class PaymentState(Enum):
     QUEUE = 0
@@ -185,9 +186,11 @@ if __name__ == "__main__":
     wallet_balances = wallet_db.get_wallets()
     to_pay = []
     for wallet in wallet_balances:
-        if int(wallet['amount']) > THRESHOLD:
+        if int(wallet['amount']) > THRESHOLD and wallet['address'] not in EXCLUDE_LIST:
             to_pay.append(wallet)
     print("Found {} wallets to pay\n".format(len(to_pay)))
+    if len(to_pay) == 0:
+        exit(0)
     my_tx = Transaction()
     for wall in to_pay:
         my_pay = Payment(wall['address'], int(wall['amount']))

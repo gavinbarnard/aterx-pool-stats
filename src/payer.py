@@ -7,6 +7,7 @@ from enum import Enum
 from time import sleep
 from util.moneropooldb import db 
 from util.rpc import wallet_get_tx_id, wallet_get_balance
+import functools
 
 THRESHOLD = int(0.005 * 1e12)
 WALLET_PORT = 28094
@@ -181,6 +182,21 @@ class Transaction(object):
     def set_success(self):
         self.state = PaymentState.SUCCESS
 
+def topay_sort(a,b):
+    if a['amount'] > b['amount']:
+        return -1
+    if a['amount'] == b['amount']:
+        return 0
+    if a['amount'] < b['amount']:
+        return 1
+
+def all_success(all_tx):
+    response = PaymentState.SUCCESS
+    for tx in all_tx:
+        if tx.state != PaymentState.SUCCESS:
+            return tx.state
+    return response
+
 if __name__ == "__main__":
     wallet_db = db()
     wallet_balances = wallet_db.get_wallets()
@@ -191,48 +207,72 @@ if __name__ == "__main__":
     print("Found {} wallets to pay\n".format(len(to_pay)))
     if len(to_pay) == 0:
         exit(0)
-    my_tx = Transaction()
-    for wall in to_pay:
-        my_pay = Payment(wall['address'], int(wall['amount']))
-        my_tx.add_payment(my_pay)
+    new_pay = sorted(to_pay, key=functools.cmp_to_key(topay_sort))
+    #print(json.dumps(new_pay, indent=True))
+#    my_tx = Transaction()
+#    for wall in to_pay:
+#        my_pay = Payment(wall['address'], int(wall['amount']))
+#        my_tx.add_payment(my_pay)
 
-    while my_tx.state in [ PaymentState.QUEUE, PaymentState.PENDING ]:
-        totalpay = 0
-        for pay in my_tx.payments:
-            totalpay += pay.amount
-        wallet_balance = wallet_get_balance(WALLET_PORT)
-        unlocked_balance = wallet_balance['result']['unlocked_balance']
-        balance = wallet_balance['result']['balance']
-        if balance <= totalpay:
-            print("Wallet has less funds than needed for tx have - have {} need {}".format(balance, totalpay))
-            continue
-        if my_tx.state == PaymentState.QUEUE:
-            if unlocked_balance <= totalpay:
-                print("Unlocked balance does not have enough to pay - waiting - have {} need {} - total bal {}".format(unlocked_balance, totalpay, balance))
-                wallet_balance = wallet_get_balance(WALLET_PORT)
-                unlocked_balance = wallet_balance['result']['unlocked_balance']
+    wb = wallet_get_balance(WALLET_PORT)
+    unspent = wb['result']['per_subaddress'][0]['num_unspent_outputs']
+
+    all_txs = []
+    for i in range(int(len(to_pay)/15)+1):
+        tx = Transaction()
+        first = True
+
+        for x in range(15):
+            if len(new_pay) == 0:
+                break
+            if first:
+                first = False
+                wall = new_pay.pop(0)
             else:
-                my_tx.send_tx_to_wallet_rpc()
-        elif my_tx.state == PaymentState.PENDING:
-            print("Payment is pending on blockchain with tx_id {}".format(my_tx.tx_hash))
-            my_tx.get_payment_state()
-        
-        if my_tx.state == PaymentState.PAIDONCHAIN:
-            my_tx.subtract_payouts()
-            my_tx.write_tx_record()
+                wall = new_pay.pop()
+            my_pay = Payment(wall['address'], int(wall['amount']))
+            tx.add_payment(my_pay)
+        all_txs.append(tx)
+    print(f"Total tx's created {len(all_txs)}")
 
-        if my_tx.state == PaymentState.FAILED:
-            print("Payment failed")
-            if (my_tx.fail_count > 2 or my_tx.tx_hash):
+    while all_success(all_txs) != PaymentState.SUCCESS:
+        for my_tx in all_txs:
+            totalpay = 0
+            for pay in my_tx.payments:
+                totalpay += pay.amount
+            wallet_balance = wallet_get_balance(WALLET_PORT)
+            unlocked_balance = wallet_balance['result']['unlocked_balance']
+            balance = wallet_balance['result']['balance']
+            if balance <= totalpay:
+                print("Wallet has less funds than needed for tx have - have {} need {}".format(balance, totalpay))
+                continue
+            if my_tx.state == PaymentState.QUEUE:
+                if unlocked_balance <= totalpay:
+                    print("Unlocked balance does not have enough to pay - waiting - have {} need {} - total bal {}".format(unlocked_balance, totalpay, balance))
+                    wallet_balance = wallet_get_balance(WALLET_PORT)
+                    unlocked_balance = wallet_balance['result']['unlocked_balance']
+                else:
+                    my_tx.send_tx_to_wallet_rpc()
+            elif my_tx.state == PaymentState.PENDING:
+                print("Payment is pending on blockchain with tx_id {}".format(my_tx.tx_hash))
+                my_tx.get_payment_state()
+            
+            if my_tx.state == PaymentState.PAIDONCHAIN:
+                my_tx.subtract_payouts()
                 my_tx.write_tx_record()
-            elif my_tx.fail_count < 2 and my_tx.tx_hash == None:
-                print("Resetting to PaymentState.QUEUE")
-                my_tx.state = PaymentState.QUEUE
 
-        if my_tx.state == PaymentState.SUCCESS:
-            print(f"{my_tx.tx_hash} SUCCESSFUL")
-        else:
-            print("Tx is currently {} with {}".format(my_tx.state, my_tx.tx_hash))
+            if my_tx.state == PaymentState.FAILED:
+                print("Payment failed")
+                if (my_tx.fail_count > 2 or my_tx.tx_hash):
+                    my_tx.write_tx_record()
+                elif my_tx.fail_count < 2 and my_tx.tx_hash == None:
+                    print("Resetting to PaymentState.QUEUE")
+                    my_tx.state = PaymentState.QUEUE
+
+            if my_tx.state == PaymentState.SUCCESS:
+                print(f"{my_tx.tx_hash} SUCCESSFUL")
+            else:
+                print("Tx is currently {} with {}".format(my_tx.state, my_tx.tx_hash))
         sleep(2)
 
 

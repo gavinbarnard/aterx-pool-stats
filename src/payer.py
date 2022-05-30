@@ -235,20 +235,28 @@ if __name__ == "__main__":
         all_txs.append(tx)
     print(f"Total tx's created {len(all_txs)}")
 
+    for my_tx in all_txs:
+        totalpay = 0
+        for pay in my_tx.payments:
+            totalpay += pay.amount
+    wallet_balance = wallet_get_balance(WALLET_PORT)
+    unlocked_balance = wallet_balance['result']['unlocked_balance']
+    balance = wallet_balance['result']['balance']
+    if balance <= totalpay:
+        print("Wallet has less funds than needed for tx have - have {} need {}".format(balance, totalpay))
+        exit(1)
+
     while all_success(all_txs) != PaymentState.SUCCESS:
         for my_tx in all_txs:
-            totalpay = 0
+            this_pay = 0
             for pay in my_tx.payments:
-                totalpay += pay.amount
+                this_pay += pay.amount
             wallet_balance = wallet_get_balance(WALLET_PORT)
             unlocked_balance = wallet_balance['result']['unlocked_balance']
             balance = wallet_balance['result']['balance']
-            if balance <= totalpay:
-                print("Wallet has less funds than needed for tx have - have {} need {}".format(balance, totalpay))
-                continue
             if my_tx.state == PaymentState.QUEUE:
-                if unlocked_balance <= totalpay:
-                    print("Unlocked balance does not have enough to pay - waiting - have {} need {} - total bal {}".format(unlocked_balance, totalpay, balance))
+                if unlocked_balance <= this_pay:
+                    print("Unlocked balance does not have enough to pay - waiting - have {} need {} - total bal {}".format(unlocked_balance, this_pay, balance))
                     wallet_balance = wallet_get_balance(WALLET_PORT)
                     unlocked_balance = wallet_balance['result']['unlocked_balance']
                 else:

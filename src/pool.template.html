@@ -77,6 +77,7 @@
 		    <tr width=100%>
 			    <td id=stat_block width=50%>
 		    <header>Pool and Miner Stats</header>
+			<h4><a class="alight" href="/1/pool.html">Where did the hash rate go?</a></h4>
         <table>
             <tr><td>Pool HR: </td><td id="pool_hashrate"></td></tr>
             <tr><td>Network HR: </td><td id="network_hashrate"></td></tr>
@@ -127,7 +128,7 @@
 	<div id="bonus_rig">
 	</div>
 	<div>
-	BonusRig1 (10~100+kh/s) <font color=yellow>[maintenance]</font> rotates hourly between anyone with a pending balance, or a previous payout, with atleast one worker, and one hash per second.  BonusRig1 will use my compute infra that is available.<br/>
+	BonusRig has been integrated to the p2poolpool .<br/>
 	</div>
     <br/><br/>
 	<table><tr>
@@ -210,7 +211,6 @@ var xmlhttp_block = new XMLHttpRequest();
 var xmlhttp_payments = new XMLHttpRequest();
 var xmlhttp_multi = new XMLHttpRequest();
 var xmlhttp_pplns = new XMLHttpRequest();
-var xmlhttp_bonus = new XMLHttpRequest();
 var xmlhttp_payout = new XMLHttpRequest();
 var graph = document.getElementById("shittygraph");
 
@@ -226,15 +226,7 @@ xmlhttp_payout.onreadystatechange = function()
 		payout_est.innerHTML = payout_json['payout_est'];
 	}
 }
-xmlhttp_bonus.onreadystatechange = function()
-{
-	if (this.readyState == 4 && this.status == 200)
-	{
-		bonus_html = document.getElementById("bonus_rig");
-		address = this.responseText.substring(1,7);
-		bonus_html.innerHTML = "BonusRig target: " + address;
-	}
-}
+
 xmlhttp_pplns.onreadystatechange = function()
 {
 	if (this.readyState == 4 && this.status == 200)
